@@ -206,4 +206,262 @@ export class SimplePipedriveClient {
       }
     }
   }
+
+  async getOrganizations(options: { limit?: number, start?: number } = {}) {
+    try {
+      const params = new URLSearchParams({
+        limit: String(options.limit || 100),
+        start: String(options.start || 0)
+      })
+      
+      const data = await this.makeRequest(`/organizations?${params}`)
+      
+      return {
+        success: true,
+        organizations: data.data || [],
+        pagination: data.additional_data?.pagination
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to fetch organizations'
+      }
+    }
+  }
+
+  async createOrganization(orgData: {
+    name: string,
+    owner_id?: number,
+    visible_to?: string,
+    address?: string,
+    [key: string]: any
+  }) {
+    try {
+      const data = await this.makeRequest('/organizations', {
+        method: 'POST',
+        body: JSON.stringify(orgData)
+      })
+      
+      return {
+        success: true,
+        organization: data.data
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to create organization'
+      }
+    }
+  }
+
+  async getActivities(options: { 
+    type?: string, 
+    done?: 0 | 1,
+    limit?: number,
+    start?: number,
+    user_id?: number,
+    start_date?: string,
+    end_date?: string
+  } = {}) {
+    try {
+      const params = new URLSearchParams({
+        limit: String(options.limit || 100),
+        start: String(options.start || 0)
+      })
+      
+      if (options.type) params.append('type', options.type)
+      if (options.done !== undefined) params.append('done', String(options.done))
+      if (options.user_id) params.append('user_id', String(options.user_id))
+      if (options.start_date) params.append('start_date', options.start_date)
+      if (options.end_date) params.append('end_date', options.end_date)
+      
+      const data = await this.makeRequest(`/activities?${params}`)
+      
+      return {
+        success: true,
+        activities: data.data || [],
+        pagination: data.additional_data?.pagination
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to fetch activities'
+      }
+    }
+  }
+
+  async createActivity(activityData: {
+    subject: string,
+    type: string, // call, meeting, task, deadline, email, lunch
+    done?: 0 | 1,
+    due_date?: string,
+    due_time?: string,
+    duration?: string, // HH:MM format
+    person_id?: number,
+    org_id?: number,
+    deal_id?: number,
+    note?: string,
+    participants?: Array<{ person_id: number }>
+  }) {
+    try {
+      const data = await this.makeRequest('/activities', {
+        method: 'POST',
+        body: JSON.stringify(activityData)
+      })
+      
+      return {
+        success: true,
+        activity: data.data
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to create activity'
+      }
+    }
+  }
+
+  async updateActivity(activityId: number, updates: Partial<{
+    subject: string,
+    done: 0 | 1,
+    type: string,
+    due_date: string,
+    due_time: string,
+    note: string
+  }>) {
+    try {
+      const data = await this.makeRequest(`/activities/${activityId}`, {
+        method: 'PUT',
+        body: JSON.stringify(updates)
+      })
+      
+      return {
+        success: true,
+        activity: data.data
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to update activity'
+      }
+    }
+  }
+
+  async updateDeal(dealId: number, updates: Partial<{
+    title: string,
+    value: number,
+    currency: string,
+    stage_id: number,
+    status: string,
+    person_id: number,
+    org_id: number,
+    [key: string]: any // For custom fields
+  }>) {
+    try {
+      const data = await this.makeRequest(`/deals/${dealId}`, {
+        method: 'PUT',
+        body: JSON.stringify(updates)
+      })
+      
+      return {
+        success: true,
+        deal: data.data
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to update deal'
+      }
+    }
+  }
+
+  async getStages(pipelineId?: number) {
+    try {
+      const params = pipelineId ? `?pipeline_id=${pipelineId}` : ''
+      const data = await this.makeRequest(`/stages${params}`)
+      
+      return {
+        success: true,
+        stages: data.data || []
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to fetch stages'
+      }
+    }
+  }
+
+  async getDealFields() {
+    try {
+      const data = await this.makeRequest('/dealFields')
+      
+      return {
+        success: true,
+        fields: data.data || []
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to fetch deal fields'
+      }
+    }
+  }
+
+  async getPersonFields() {
+    try {
+      const data = await this.makeRequest('/personFields')
+      
+      return {
+        success: true,
+        fields: data.data || []
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to fetch person fields'
+      }
+    }
+  }
+
+  async getOrganizationFields() {
+    try {
+      const data = await this.makeRequest('/organizationFields')
+      
+      return {
+        success: true,
+        fields: data.data || []
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to fetch organization fields'
+      }
+    }
+  }
+
+  async addNote(entityType: 'deal' | 'person' | 'organization', entityId: number, content: string) {
+    try {
+      const noteData: any = { content }
+      
+      if (entityType === 'deal') noteData.deal_id = entityId
+      else if (entityType === 'person') noteData.person_id = entityId
+      else if (entityType === 'organization') noteData.org_id = entityId
+      
+      const data = await this.makeRequest('/notes', {
+        method: 'POST',
+        body: JSON.stringify(noteData)
+      })
+      
+      return {
+        success: true,
+        note: data.data
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to add note'
+      }
+    }
+  }
 }

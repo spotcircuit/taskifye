@@ -1,0 +1,203 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Multi-tenant support
+model Tenant {
+  id            String   @id @default(uuid())
+  name          String
+  slug          String   @unique
+  apiKeys       Json?    // Store encrypted API keys
+  settings      Json?    // Tenant-specific settings
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  users         User[]
+  jobs          Job[]
+  payments      Payment[]
+  smsMessages   SmsMessage[]
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  role          String   @default("technician") // admin, manager, technician
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  assignedJobs  Job[]    @relation("TechnicianJobs")
+  jobChanges    JobStatusHistory[]
+}
+
+// Core job tracking
+model Job {
+  id                  String   @id @default(uuid())
+  jobNumber           String   @unique
+  tenantId            String
+  tenant              Tenant   @relation(fields: [tenantId], references: [id])
+  
+  // Pipedrive integration
+  pipedriveDeaId     Int?
+  pipedrivPersonId   Int?
+  pipedriveOrgId     Int?
+  
+  // Job details
+  status              JobStatus @default(LEAD)
+  serviceType         String?
+  description         String?
+  
+  // Customer info (cached from Pipedrive)
+  customerName        String
+  customerEmail       String?
+  customerPhone       String?
+  customerAddress     String?
+  
+  // Scheduling
+  scheduledDate       DateTime?
+  scheduledDuration   Int?      // minutes
+  assignedTechId      String?
+  assignedTech        User?     @relation("TechnicianJobs", fields: [assignedTechId], references: [id])
+  
+  // Completion
+  startedAt           DateTime?
+  completedAt         DateTime?
+  completionNotes     String?
+  photos              Json?     // Array of photo URLs
+  signatureUrl        String?
+  
+  // Financials
+  quotedAmount        Decimal?  @db.Decimal(10, 2)
+  finalAmount         Decimal?  @db.Decimal(10, 2)
+  paymentStatus       PaymentStatus @default(PENDING)
+  
+  // Metadata
+  customFields        Json?     // Store any custom data
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  statusHistory       JobStatusHistory[]
+  payments            Payment[]
+  activities          JobActivity[]
+  smsMessages         SmsMessage[]
+  
+  @@index([tenantId, status])
+  @@index([tenantId, scheduledDate])
+  @@index([pipedriveDeaId])
+}
+
+model JobStatusHistory {
+  id            String    @id @default(uuid())
+  jobId         String
+  job           Job       @relation(fields: [jobId], references: [id])
+  fromStatus    JobStatus?
+  toStatus      JobStatus
+  changedBy     String?
+  changedByUser User?     @relation(fields: [changedBy], references: [id])
+  notes         String?
+  createdAt     DateTime  @default(now())
+  
+  @@index([jobId])
+}
+
+model Payment {
+  id              String   @id @default(uuid())
+  jobId           String
+  job             Job      @relation(fields: [jobId], references: [id])
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+  
+  amount          Decimal  @db.Decimal(10, 2)
+  method          PaymentMethod
+  referenceNumber String?  // Check number, transaction ID, etc.
+  receivedDate    DateTime
+  notes           String?
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([jobId])
+  @@index([tenantId, receivedDate])
+}
+
+model JobActivity {
+  id              String   @id @default(uuid())
+  jobId           String
+  job             Job      @relation(fields: [jobId], references: [id])
+  
+  type            String   // "note", "email", "call", "site_visit", etc.
+  subject         String
+  description     String?
+  pipedriveActivityId Int? // Link to Pipedrive activity if created there
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([jobId])
+}
+
+model SmsMessage {
+  id              String   @id @default(uuid())
+  jobId           String?
+  job             Job?     @relation(fields: [jobId], references: [id])
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+  
+  to              String
+  from            String
+  message         String
+  direction       String   // "outbound" or "inbound"
+  status          String   // "queued", "sent", "delivered", "failed"
+  twilioSid       String?
+  
+  sentAt          DateTime @default(now())
+  deliveredAt     DateTime?
+  
+  @@index([jobId])
+  @@index([tenantId, sentAt])
+}
+
+// Cache for fast dashboard reads
+model CachedStats {
+  id              String   @id @default(uuid())
+  tenantId        String   @unique
+  
+  stats           Json     // Store aggregated stats
+  lastUpdated     DateTime @default(now())
+}
+
+// Enums
+enum JobStatus {
+  LEAD
+  QUOTED
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  INVOICED
+  PAID
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+}
+
+enum PaymentMethod {
+  CASH
+  CHECK
+  CARD
+  ACH
+  OTHER
+}

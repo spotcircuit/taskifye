@@ -50,6 +50,162 @@ export class PipedriveService {
     })
     return response.json()
   }
+
+  async getPipelines() {
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'getPipelines',
+        apiKey: this.apiKey
+      })
+    })
+    return response.json()
+  }
+
+  async getOrganizations(options?: any) {
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'getOrganizations',
+        apiKey: this.apiKey,
+        options
+      })
+    })
+    return response.json()
+  }
+
+  async createOrganization(orgData: any) {
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'createOrganization',
+        apiKey: this.apiKey,
+        orgData
+      })
+    })
+    return response.json()
+  }
+
+  async getActivities(options?: any) {
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'getActivities',
+        apiKey: this.apiKey,
+        options
+      })
+    })
+    return response.json()
+  }
+
+  async createActivity(activityData: any) {
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'createActivity',
+        apiKey: this.apiKey,
+        activityData
+      })
+    })
+    return response.json()
+  }
+
+  async updateActivity(activityId: number, updates: any) {
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'updateActivity',
+        apiKey: this.apiKey,
+        activityId,
+        updates
+      })
+    })
+    return response.json()
+  }
+
+  async updateDeal(dealId: number, updates: any) {
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'updateDeal',
+        apiKey: this.apiKey,
+        dealId,
+        updates
+      })
+    })
+    return response.json()
+  }
+
+  async getStages(pipelineId?: number) {
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'getStages',
+        apiKey: this.apiKey,
+        pipelineId
+      })
+    })
+    return response.json()
+  }
+
+  async getDealFields() {
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'getDealFields',
+        apiKey: this.apiKey
+      })
+    })
+    return response.json()
+  }
+
+  async getPersonFields() {
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'getPersonFields',
+        apiKey: this.apiKey
+      })
+    })
+    return response.json()
+  }
+
+  async getOrganizationFields() {
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'getOrganizationFields',
+        apiKey: this.apiKey
+      })
+    })
+    return response.json()
+  }
+
+  async addNote(entityType: 'deal' | 'person' | 'organization', entityId: number, content: string) {
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'addNote',
+        apiKey: this.apiKey,
+        entityType,
+        entityId,
+        content
+      })
+    })
+    return response.json()
+  }
 }
 
 // Helper to store/retrieve API keys from localStorage (temporary solution)

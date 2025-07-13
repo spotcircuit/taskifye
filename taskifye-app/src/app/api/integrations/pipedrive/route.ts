@@ -45,6 +45,39 @@ export async function POST(req: NextRequest) {
       case 'getPipelines':
         return NextResponse.json(await pipedrive.getPipelines())
       
+      case 'getOrganizations':
+        return NextResponse.json(await pipedrive.getOrganizations(params.options))
+      
+      case 'createOrganization':
+        return NextResponse.json(await pipedrive.createOrganization(params.orgData))
+      
+      case 'getActivities':
+        return NextResponse.json(await pipedrive.getActivities(params.options))
+      
+      case 'createActivity':
+        return NextResponse.json(await pipedrive.createActivity(params.activityData))
+      
+      case 'updateActivity':
+        return NextResponse.json(await pipedrive.updateActivity(params.activityId, params.updates))
+      
+      case 'updateDeal':
+        return NextResponse.json(await pipedrive.updateDeal(params.dealId, params.updates))
+      
+      case 'getStages':
+        return NextResponse.json(await pipedrive.getStages(params.pipelineId))
+      
+      case 'getDealFields':
+        return NextResponse.json(await pipedrive.getDealFields())
+      
+      case 'getPersonFields':
+        return NextResponse.json(await pipedrive.getPersonFields())
+      
+      case 'getOrganizationFields':
+        return NextResponse.json(await pipedrive.getOrganizationFields())
+      
+      case 'addNote':
+        return NextResponse.json(await pipedrive.addNote(params.entityType, params.entityId, params.content))
+      
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
