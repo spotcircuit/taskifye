@@ -1,3 +1,5 @@
 {
-  "rootDirectory": "taskifye-app"
+  "buildCommand": "cd taskifye-app && npm run build",
+  "installCommand": "cd taskifye-app && npm install",
+  "devCommand": "cd taskifye-app && npm run dev"
 }
