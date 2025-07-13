@@ -1,0 +1,7 @@
+{
+  "rootDirectory": "taskifye-app",
+  "framework": "nextjs",
+  "buildCommand": "cd taskifye-app && prisma generate && next build",
+  "installCommand": "cd taskifye-app && npm install",
+  "outputDirectory": "taskifye-app/.next"
+}
