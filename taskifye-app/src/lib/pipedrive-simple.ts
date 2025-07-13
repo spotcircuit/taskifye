@@ -172,8 +172,8 @@ export class SimplePipedriveClient {
     for (const person of persons) {
       const personData = {
         name: person.name,
-        email: person.email ? [{ value: person.email, primary: true }] : undefined,
-        phone: person.phone ? [{ value: person.phone, primary: true }] : undefined
+        email: person.email ? [person.email] : undefined,
+        phone: person.phone ? [person.phone] : undefined
       }
       
       const result = await this.createPerson(personData)

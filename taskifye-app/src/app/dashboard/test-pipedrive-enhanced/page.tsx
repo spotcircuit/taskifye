@@ -14,9 +14,9 @@ export default function TestPipedriveEnhancedPage() {
     setLoading(testName)
     try {
       const result = await testFunction()
-      setResults(prev => ({ ...prev, [testName]: result }))
+      setResults((prev: any) => ({ ...prev, [testName]: result }))
     } catch (error: any) {
-      setResults(prev => ({ ...prev, [testName]: { error: error.message } }))
+      setResults((prev: any) => ({ ...prev, [testName]: { error: error.message } }))
     }
     setLoading(null)
   }

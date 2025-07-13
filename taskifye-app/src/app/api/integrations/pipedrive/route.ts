@@ -5,11 +5,14 @@ export async function POST(req: NextRequest) {
   try {
     const { action, apiKey, ...params } = await req.json()
 
-    if (!apiKey) {
+    // Use provided API key or fall back to environment variable
+    const pipedriveApiKey = apiKey || process.env.PIPEDRIVE_API_KEY
+
+    if (!pipedriveApiKey) {
       return NextResponse.json({ error: 'API key is required' }, { status: 400 })
     }
 
-    const pipedrive = new SimplePipedriveClient(apiKey)
+    const pipedrive = new SimplePipedriveClient(pipedriveApiKey)
 
     switch (action) {
       case 'test':
@@ -24,7 +27,7 @@ export async function POST(req: NextRequest) {
       case 'getPersons':
         // For now, we'll use a simple fetch for persons list
         const personsResponse = await fetch(
-          `https://api.pipedrive.com/v1/persons?api_token=${apiKey}&limit=${params.limit || 10}`
+          `https://api.pipedrive.com/v1/persons?api_token=${pipedriveApiKey}&limit=${params.limit || 10}`
         )
         const personsData = await personsResponse.json()
         return NextResponse.json({
