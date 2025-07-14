@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Settings, Building, Users, Cable, Bell, Shield, 
   CreditCard, Globe, Palette, Save, Key, Mail,
-  Clock, Database, Webhook
+  Clock, Database, Webhook, MessageSquare, Phone,
+  Calendar, Bot, Star
 } from 'lucide-react'
 
 export default function SettingsPage() {
@@ -40,6 +41,9 @@ export default function SettingsPage() {
     twilio: { connected: false, accountSid: '', authToken: '' },
     googleCalendar: { connected: false },
     quickbooks: { connected: false },
+    reachInbox: { connected: false, apiKey: '', workspaceId: '' },
+    calendly: { connected: false, webhookUrl: '', apiKey: '' },
+    voiceAI: { connected: false, provider: 'bland', apiKey: '' },
   })
 
   return (
@@ -255,35 +259,37 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            {/* Twilio */}
+            {/* ReachInbox */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Twilio SMS</CardTitle>
+                  <CardTitle className="text-lg">ReachInbox</CardTitle>
                   <div className={`px-2 py-1 rounded-full text-xs ${
-                    integrations.twilio.connected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                    integrations.reachInbox.connected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
                   }`}>
-                    {integrations.twilio.connected ? 'Connected' : 'Not Connected'}
+                    {integrations.reachInbox.connected ? 'Connected' : 'Not Connected'}
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Send SMS notifications and reminders to customers
+                  Email campaigns, SMS, and review management
                 </p>
                 <div className="space-y-2">
-                  <Label>Account SID</Label>
-                  <Input placeholder="Enter your Twilio Account SID" />
+                  <Label>API Key</Label>
+                  <Input placeholder="Enter your ReachInbox API key" />
+                  <Label>Workspace ID</Label>
+                  <Input placeholder="Enter your Workspace ID" />
                 </div>
                 <Button>Connect</Button>
               </CardContent>
             </Card>
 
-            {/* Google Calendar */}
+            {/* Gmail Calendar */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Google Calendar</CardTitle>
+                  <CardTitle className="text-lg">Gmail Calendar</CardTitle>
                   <div className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
                     Not Connected
                   </div>
@@ -291,9 +297,80 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Sync appointments with Google Calendar
+                  Sync appointments with Gmail Calendar
                 </p>
-                <Button>Connect with Google</Button>
+                <Button>
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Connect Gmail Account
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Calendly */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">Calendly</CardTitle>
+                  <div className={`px-2 py-1 rounded-full text-xs ${
+                    integrations.calendly.connected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                  }`}>
+                    {integrations.calendly.connected ? 'Connected' : 'Not Connected'}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Automated appointment scheduling
+                </p>
+                <div className="space-y-2">
+                  <Label>API Key</Label>
+                  <Input placeholder="Enter your Calendly API key" />
+                  <Label>Webhook URL</Label>
+                  <Input 
+                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/api/webhooks/calendly`}
+                    disabled
+                    className="bg-gray-50"
+                  />
+                </div>
+                <Button>Configure</Button>
+              </CardContent>
+            </Card>
+
+            {/* Voice AI */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">Voice AI Receptionist</CardTitle>
+                  <div className={`px-2 py-1 rounded-full text-xs ${
+                    integrations.voiceAI.connected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                  }`}>
+                    {integrations.voiceAI.connected ? 'Connected' : 'Not Connected'}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  AI-powered phone answering and appointment booking
+                </p>
+                <div className="space-y-2">
+                  <Label>Provider</Label>
+                  <Select defaultValue="bland">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bland">Bland.ai</SelectItem>
+                      <SelectItem value="vapi">Vapi</SelectItem>
+                      <SelectItem value="custom">Custom</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Label>API Key</Label>
+                  <Input placeholder="Enter your Voice AI API key" />
+                </div>
+                <Button>
+                  <Phone className="mr-2 h-4 w-4" />
+                  Configure Voice AI
+                </Button>
               </CardContent>
             </Card>
 

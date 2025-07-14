@@ -13,7 +13,9 @@ import {
   Cable, 
   Settings,
   TestTube,
-  ChevronDown
+  ChevronDown,
+  Star,
+  Phone
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -24,10 +26,12 @@ const mainNavItems = [
   { href: '/dashboard/contacts', label: 'Customers', icon: Users },
   { href: '/dashboard/quotes', label: 'Quotes', icon: FileText },
   { href: '/dashboard/invoices', label: 'Invoices', icon: DollarSign },
+  { href: '/dashboard/reviews', label: 'Reviews', icon: Star },
   { href: '/dashboard/reports', label: 'Reports', icon: TrendingUp },
 ]
 
 const settingsNavItems = [
+  { href: '/dashboard/voice-ai', label: 'Voice AI', icon: Phone },
   { href: '/dashboard/integrations', label: 'Integrations', icon: Cable },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]
