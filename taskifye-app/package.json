@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "node node_modules/next/dist/bin/next dev",
     "dev:old": "next dev",
-    "build": "npx prisma generate && next build",
+    "build": "prisma generate && next build",
+    "vercel-build": "prisma generate && next build",
+    "build:win": "./build.cmd",
+    "build:ps": "pwsh ./build.ps1",
     "start": "node node_modules/next/dist/bin/next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
