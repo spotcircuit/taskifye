@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -9,9 +9,40 @@ import {
   DollarSign, Users, Briefcase, Clock,
   BarChart3, LineChart, PieChart, FileText
 } from 'lucide-react'
+import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
 
 export default function ReportsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState('this_month')
+  const [pipedriveData, setPipedriveData] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    fetchPipedriveData()
+  }, [])
+
+  const fetchPipedriveData = async () => {
+    const apiKey = pipedriveStorage.getApiKey()
+    if (!apiKey) return
+
+    setLoading(true)
+    try {
+      const pipedrive = new PipedriveService(apiKey)
+      const [dealsResponse, personsResponse] = await Promise.all([
+        pipedrive.getDeals({ status: 'all_not_deleted' }),
+        pipedrive.getPersons()
+      ])
+      
+      setPipedriveData({
+        deals: dealsResponse.success ? dealsResponse.deals : [],
+        contacts: personsResponse.success ? personsResponse.persons : []
+      })
+    } catch (error) {
+      console.error('Error fetching Pipedrive data:', error)
+      setPipedriveData({ deals: [], contacts: [] })
+    } finally {
+      setLoading(false)
+    }
+  }
   
   const kpis = [
     {
@@ -268,6 +299,140 @@ export default function ReportsPage() {
                 <Clock className="mr-2 h-4 w-4" />
                 Service Time Analysis
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Customer Segments */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Customer Segments</CardTitle>
+            <CardDescription>
+              Breakdown by customer type and value
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {pipedriveData && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full bg-green-500" />
+                      <span className="text-sm font-medium">High Value</span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium">
+                        {pipedriveData.contacts?.filter((c: any) => 
+                          c.won_deals_count > 2
+                        ).length || 0} customers
+                      </p>
+                      <p className="text-xs text-muted-foreground">3+ completed jobs</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full bg-blue-500" />
+                      <span className="text-sm font-medium">Active</span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium">
+                        {pipedriveData.contacts?.filter((c: any) => 
+                          c.activities_count > 0
+                        ).length || 0} customers
+                      </p>
+                      <p className="text-xs text-muted-foreground">Recent activity</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full bg-orange-500" />
+                      <span className="text-sm font-medium">At Risk</span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium">
+                        {pipedriveData.contacts?.filter((c: any) => 
+                          c.lost_deals_count > 0
+                        ).length || 0} customers
+                      </p>
+                      <p className="text-xs text-muted-foreground">Lost deals</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full bg-purple-500" />
+                      <span className="text-sm font-medium">New Leads</span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium">
+                        {pipedriveData.contacts?.filter((c: any) => 
+                          c.deals_count === 0
+                        ).length || 0} leads
+                      </p>
+                      <p className="text-xs text-muted-foreground">No deals yet</p>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Pipeline Health */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Pipeline Health</CardTitle>
+            <CardDescription>
+              Current deals by stage
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {pipedriveData?.deals && (
+                <>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Open Deals</span>
+                      <span className="font-medium">
+                        {pipedriveData.deals.filter((d: any) => d.status === 'open').length}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-blue-500"
+                        style={{
+                          width: `${(pipedriveData.deals.filter((d: any) => d.status === 'open').length / pipedriveData.deals.length) * 100}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 pt-4">
+                    <div>
+                      <p className="text-2xl font-bold text-green-600">
+                        ${pipedriveData.deals
+                          .filter((d: any) => d.status === 'open')
+                          .reduce((sum: number, d: any) => sum + (d.value || 0), 0)
+                          .toLocaleString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Total pipeline value</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">
+                        {Math.round(
+                          pipedriveData.deals
+                            .filter((d: any) => d.status === 'open')
+                            .reduce((sum: number, d: any) => sum + (d.value || 0), 0) /
+                          pipedriveData.deals.filter((d: any) => d.status === 'open').length || 0
+                        ).toLocaleString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Avg deal size</p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>

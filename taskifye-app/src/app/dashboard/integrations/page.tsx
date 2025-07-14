@@ -82,6 +82,17 @@ const integrations = [
       { name: 'api_key', label: 'API Key (optional)', type: 'password' },
     ],
   },
+  {
+    id: 'wheniwork',
+    name: 'When I Work',
+    description: 'Employee scheduling and time tracking',
+    logo: '📅',
+    connected: false,
+    fields: [
+      { name: 'api_key', label: 'API Key', type: 'password' },
+      { name: 'account_id', label: 'Account ID', type: 'text' },
+    ],
+  },
 ]
 
 export default function IntegrationsPage() {
@@ -275,7 +286,7 @@ export default function IntegrationsPage() {
                       {field.type === 'select' ? (
                         <select
                           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                          value={credentials[integration.id]?.[field.name] || field.options?.[0]}
+                          value={credentials[integration.id]?.[field.name] || ((field as any).options?.[0] || '')}
                           onChange={(e) => {
                             setCredentials({
                               ...credentials,
@@ -286,7 +297,7 @@ export default function IntegrationsPage() {
                             })
                           }}
                         >
-                          {field.options?.map((option) => (
+                          {((field as any).options || []).map((option: string) => (
                             <option key={option} value={option}>
                               {option.charAt(0).toUpperCase() + option.slice(1)}
                             </option>
@@ -297,11 +308,11 @@ export default function IntegrationsPage() {
                           type={field.type}
                           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                           placeholder={`Enter ${field.label}`}
-                          value={field.readonly ? (typeof window !== 'undefined' ? window.location.origin + field.value : field.value) : (credentials[integration.id]?.[field.name] || '')}
-                          readOnly={field.readonly}
-                          disabled={field.readonly}
+                          value={(field as any).readonly ? (typeof window !== 'undefined' ? window.location.origin + (field as any).value : (field as any).value) : (credentials[integration.id]?.[field.name] || '')}
+                          readOnly={(field as any).readonly}
+                          disabled={(field as any).readonly}
                           onChange={(e) => {
-                            if (!field.readonly) {
+                            if (!(field as any).readonly) {
                               setCredentials({
                                 ...credentials,
                                 [integration.id]: {
