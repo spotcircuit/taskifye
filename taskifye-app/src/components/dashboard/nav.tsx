@@ -15,9 +15,14 @@ import {
   TestTube,
   ChevronDown,
   Star,
-  Phone
+  Phone,
+  Bot,
+  Mail,
+  Zap,
+  Database
 } from 'lucide-react'
 import { useState } from 'react'
+import { useBranding } from '@/contexts/branding-context'
 
 const mainNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -26,6 +31,8 @@ const mainNavItems = [
   { href: '/dashboard/contacts', label: 'Customers', icon: Users },
   { href: '/dashboard/quotes', label: 'Quotes', icon: FileText },
   { href: '/dashboard/invoices', label: 'Invoices', icon: DollarSign },
+  { href: '/dashboard/campaigns', label: 'Campaigns', icon: Mail },
+  { href: '/dashboard/automations', label: 'Automations', icon: Zap },
   { href: '/dashboard/reviews', label: 'Reviews', icon: Star },
   { href: '/dashboard/reports', label: 'Reports', icon: TrendingUp },
 ]
@@ -37,12 +44,18 @@ const settingsNavItems = [
 ]
 
 const devNavItems = [
+  { href: '/dashboard/pipedrive-diagnostics', label: 'Pipedrive Diagnostics', icon: Database },
+  { href: '/dashboard/execute-seeding', label: 'Execute Seeding', icon: Database },
+  { href: '/dashboard/admin', label: 'Admin Panel', icon: Settings },
+  { href: '/dashboard/test-data', label: 'Test Data & CRM', icon: TestTube },
   { href: '/dashboard/test-pipedrive', label: 'Test API', icon: TestTube },
   { href: '/dashboard/test-pipedrive-enhanced', label: 'Test Enhanced', icon: TestTube },
+  { href: '/dashboard/receptionist-demo', label: 'Receptionist Demo', icon: Bot },
 ]
 
 export default function DashboardNav() {
   const pathname = usePathname()
+  const { branding, isLoading } = useBranding()
   const [showDev, setShowDev] = useState(false)
 
   const NavLink = ({ item }: { item: any }) => {
@@ -66,10 +79,23 @@ export default function DashboardNav() {
     <nav className="flex w-64 flex-col border-r border-border bg-card h-screen">
       {/* Logo */}
       <div className="p-6 border-b">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          Taskifye
-        </h1>
-        <p className="text-xs text-muted-foreground mt-1">Field Service Platform</p>
+        <div className="flex items-center gap-3">
+          {branding.logoUrl && (
+            <img 
+              src={branding.logoUrl} 
+              alt={`${branding.companyName} logo`}
+              className="h-8 w-8 object-contain"
+            />
+          )}
+          <div>
+            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              {isLoading ? 'Loading...' : branding.companyName}
+            </h1>
+            {branding.slogan && (
+              <p className="text-xs text-muted-foreground mt-1">{branding.slogan}</p>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Main Navigation */}

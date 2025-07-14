@@ -8,6 +8,7 @@ import {
   Plus, FileText, UserPlus, CalendarPlus
 } from 'lucide-react'
 import { PipedriveWidget } from '@/components/integrations/pipedrive-widget'
+import { ActivityFeed } from '@/components/dashboard/activity-feed'
 import { useRouter } from 'next/navigation'
 
 export default function DashboardPage() {
@@ -240,6 +241,9 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Activity Feed - CRM Timeline */}
+      <ActivityFeed />
 
       {/* Pipedrive Widget - Now at the bottom */}
       <PipedriveWidget />

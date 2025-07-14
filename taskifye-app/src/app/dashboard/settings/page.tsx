@@ -9,8 +9,9 @@ import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
-  Building, Users, Bell, CreditCard, Save
+  Building, Users, Bell, CreditCard, Save, Palette
 } from 'lucide-react'
+import { BrandingSettings } from '@/components/settings/branding-settings'
 
 export default function SettingsPage() {
   const [companySettings, setCompanySettings] = useState({
@@ -49,10 +50,14 @@ export default function SettingsPage() {
 
       {/* Settings Tabs */}
       <Tabs defaultValue="company" className="space-y-4">
-        <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+        <TabsList className="grid grid-cols-5 w-full max-w-3xl">
           <TabsTrigger value="company" className="flex items-center gap-2">
             <Building className="h-4 w-4" />
             Company
+          </TabsTrigger>
+          <TabsTrigger value="branding" className="flex items-center gap-2">
+            <Palette className="h-4 w-4" />
+            Branding
           </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
@@ -162,6 +167,11 @@ export default function SettingsPage() {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Branding Settings */}
+        <TabsContent value="branding" className="space-y-4">
+          <BrandingSettings />
         </TabsContent>
 
         {/* Users */}

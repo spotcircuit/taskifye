@@ -72,6 +72,28 @@ export class SimplePipedriveClient {
     }
   }
 
+  async getPersons(options: { limit?: number, start?: number } = {}) {
+    try {
+      const params = new URLSearchParams({
+        limit: String(options.limit || 100),
+        start: String(options.start || 0)
+      })
+      
+      const data = await this.makeRequest(`/persons?${params}`)
+      
+      return {
+        success: true,
+        persons: data.data || [],
+        pagination: data.additional_data?.pagination
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to fetch persons'
+      }
+    }
+  }
+
   async createPerson(personData: {
     name: string,
     email?: string[],

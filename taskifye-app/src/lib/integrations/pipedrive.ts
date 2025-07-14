@@ -14,16 +14,7 @@ export class PipedriveService {
   }
 
   async getDeals(params = {}) {
-    const response = await fetch('/api/integrations/pipedrive', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'getDeals',
-        apiKey: this.apiKey,
-        ...params
-      })
-    })
-    return response.json()
+    return this.client.getDeals(params)
   }
 
   async getContacts(params = {}) {
@@ -205,6 +196,23 @@ export class PipedriveService {
       })
     })
     return response.json()
+  }
+
+  async createPerson(personData: any) {
+    return this.client.createPerson(personData)
+  }
+
+  async getPersons(params = {}) {
+    return this.client.getPersons(params)
+  }
+
+  async searchPersons(term: string) {
+    // Note: Search is not implemented in SimplePipedriveClient yet
+    return this.client.getPersons({ limit: 100 })
+  }
+
+  async createDeal(dealData: any) {
+    return this.client.createDeal(dealData)
   }
 }
 

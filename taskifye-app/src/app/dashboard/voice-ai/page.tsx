@@ -13,7 +13,8 @@ import {
   Phone, Bot, Mic, PhoneCall, PhoneOff, 
   Clock, Calendar, DollarSign, TrendingUp,
   Settings, PlayCircle, PauseCircle, Volume2,
-  MessageSquare, AlertCircle, CheckCircle, Plus
+  MessageSquare, AlertCircle, CheckCircle, Plus,
+  Workflow, Server, Cloud, Link, ArrowRight
 } from 'lucide-react'
 
 export default function VoiceAIPage() {
@@ -158,8 +159,9 @@ export default function VoiceAIPage() {
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 max-w-2xl">
+        <TabsList className="grid w-full grid-cols-5 max-w-3xl">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="architecture">Architecture</TabsTrigger>
           <TabsTrigger value="settings">AI Settings</TabsTrigger>
           <TabsTrigger value="scripts">Call Scripts</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -266,6 +268,191 @@ export default function VoiceAIPage() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="architecture" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>n8n Integration Architecture</CardTitle>
+              <CardDescription>
+                How Voice AI connects with n8n workflow automation
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Architecture Diagram */}
+              <div className="bg-muted/50 rounded-lg p-6">
+                <div className="space-y-8">
+                  {/* Frontend Layer */}
+                  <div>
+                    <h4 className="font-medium mb-4 text-sm text-muted-foreground uppercase tracking-wider">Frontend (UI Agent)</h4>
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <div className="bg-background border rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Phone className="h-5 w-5 text-blue-600" />
+                          <h5 className="font-medium">Voice Interface</h5>
+                        </div>
+                        <ul className="text-sm text-muted-foreground space-y-1">
+                          <li>• Capture voice input</li>
+                          <li>• Stream audio to n8n</li>
+                          <li>• Play AI responses</li>
+                        </ul>
+                      </div>
+                      <div className="bg-background border rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <MessageSquare className="h-5 w-5 text-green-600" />
+                          <h5 className="font-medium">Chat Widget</h5>
+                        </div>
+                        <ul className="text-sm text-muted-foreground space-y-1">
+                          <li>• Text conversations</li>
+                          <li>• Quick replies</li>
+                          <li>• File uploads</li>
+                        </ul>
+                      </div>
+                      <div className="bg-background border rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Bot className="h-5 w-5 text-purple-600" />
+                          <h5 className="font-medium">Status Display</h5>
+                        </div>
+                        <ul className="text-sm text-muted-foreground space-y-1">
+                          <li>• Real-time updates</li>
+                          <li>• Action buttons</li>
+                          <li>• Error handling</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Connection Arrow */}
+                  <div className="flex justify-center">
+                    <div className="flex items-center gap-2">
+                      <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-sm font-medium">API: /api/receptionist</span>
+                      <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  </div>
+
+                  {/* Backend Layer */}
+                  <div>
+                    <h4 className="font-medium mb-4 text-sm text-muted-foreground uppercase tracking-wider">Backend (n8n Orchestrator)</h4>
+                    <div className="bg-background border rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Workflow className="h-5 w-5 text-orange-600" />
+                        <h5 className="font-medium">n8n Workflow Engine</h5>
+                      </div>
+                      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                        <div className="p-3 bg-muted/50 rounded">
+                          <h6 className="font-medium text-sm mb-1">Workflow Logic</h6>
+                          <p className="text-xs text-muted-foreground">Routing, state management, business rules, persona context</p>
+                        </div>
+                        <div className="p-3 bg-muted/50 rounded">
+                          <h6 className="font-medium text-sm mb-1">LLM Integration</h6>
+                          <p className="text-xs text-muted-foreground">OpenAI, Claude, or custom AI models for conversation</p>
+                        </div>
+                        <div className="p-3 bg-muted/50 rounded">
+                          <h6 className="font-medium text-sm mb-1">Intent Detection</h6>
+                          <p className="text-xs text-muted-foreground">Booking, inquiry, complaint, emergency triage</p>
+                        </div>
+                        <div className="p-3 bg-muted/50 rounded">
+                          <h6 className="font-medium text-sm mb-1">Validation</h6>
+                          <p className="text-xs text-muted-foreground">Phone/email validation, business hours check</p>
+                        </div>
+                        <div className="p-3 bg-muted/50 rounded">
+                          <h6 className="font-medium text-sm mb-1">Actions</h6>
+                          <p className="text-xs text-muted-foreground">Book appointments, create tickets, escalate to human</p>
+                        </div>
+                        <div className="p-3 bg-muted/50 rounded">
+                          <h6 className="font-medium text-sm mb-1">Analytics</h6>
+                          <p className="text-xs text-muted-foreground">Log conversations, tag outcomes, performance metrics</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Integrations */}
+                  <div>
+                    <h4 className="font-medium mb-4 text-sm text-muted-foreground uppercase tracking-wider">External Integrations</h4>
+                    <div className="grid gap-3 md:grid-cols-4">
+                      <div className="bg-background border rounded-lg p-3 text-center">
+                        <Server className="h-5 w-5 mx-auto mb-1 text-blue-600" />
+                        <h6 className="font-medium text-sm">Pipedrive CRM</h6>
+                        <p className="text-xs text-muted-foreground mt-1">Lead & contact management</p>
+                      </div>
+                      <div className="bg-background border rounded-lg p-3 text-center">
+                        <Calendar className="h-5 w-5 mx-auto mb-1 text-green-600" />
+                        <h6 className="font-medium text-sm">Calendly</h6>
+                        <p className="text-xs text-muted-foreground mt-1">Appointment booking</p>
+                      </div>
+                      <div className="bg-background border rounded-lg p-3 text-center">
+                        <MessageSquare className="h-5 w-5 mx-auto mb-1 text-purple-600" />
+                        <h6 className="font-medium text-sm">ReachInbox</h6>
+                        <p className="text-xs text-muted-foreground mt-1">SMS & email follow-ups</p>
+                      </div>
+                      <div className="bg-background border rounded-lg p-3 text-center">
+                        <Cloud className="h-5 w-5 mx-auto mb-1 text-orange-600" />
+                        <h6 className="font-medium text-sm">Google Sheets</h6>
+                        <p className="text-xs text-muted-foreground mt-1">Analytics & reporting</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Integration Settings */}
+              <div className="space-y-4">
+                <h3 className="font-medium">n8n Webhook Configuration</h3>
+                <div className="space-y-3">
+                  <div>
+                    <Label>n8n Webhook URL</Label>
+                    <Input 
+                      placeholder="https://your-n8n-instance.com/webhook/receptionist"
+                      defaultValue={process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || ''}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Configure this in your .env.local file as N8N_RECEPTIONIST_WEBHOOK_URL
+                    </p>
+                  </div>
+                  <div>
+                    <Label>n8n API Key (Optional)</Label>
+                    <Input 
+                      type="password"
+                      placeholder="Your n8n API key for authentication"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Response Structure */}
+              <div className="space-y-4">
+                <h3 className="font-medium">API Response Structure</h3>
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <pre className="text-xs overflow-x-auto">
+{`{
+  "sessionId": "unique-session-id",
+  "message": "AI response text",
+  "status": "success | error | escalate | ended",
+  "actions": [
+    {
+      "type": "book_appointment",
+      "label": "Book Now",
+      "data": { ... }
+    }
+  ],
+  "audioUrl": "optional-audio-response.mp3",
+  "metadata": {
+    "intent": "booking",
+    "sentiment": "positive"
+  }
+}`}
+                  </pre>
+                </div>
+              </div>
+
+              <Button className="w-full" variant="outline">
+                <Link className="mr-2 h-4 w-4" />
+                Test n8n Connection
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4">
