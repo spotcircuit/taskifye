@@ -20,10 +20,42 @@ const integrations = [
   {
     id: 'reachinbox',
     name: 'ReachInbox',
-    description: 'Email campaigns and sequences',
+    description: 'Email campaigns, SMS, and review management',
     logo: '📧',
     connected: false,
     fields: [
+      { name: 'api_key', label: 'API Key', type: 'password' },
+      { name: 'workspace_id', label: 'Workspace ID', type: 'text' },
+    ],
+  },
+  {
+    id: 'calendly',
+    name: 'Calendly',
+    description: 'Automated appointment scheduling',
+    logo: '📅',
+    connected: false,
+    fields: [
+      { name: 'api_key', label: 'API Key', type: 'password' },
+      { name: 'webhook_url', label: 'Webhook URL (auto-generated)', type: 'text', readonly: true, value: '/api/webhooks/calendly' },
+    ],
+  },
+  {
+    id: 'gmail',
+    name: 'Gmail Calendar',
+    description: 'Sync appointments with Gmail Calendar',
+    logo: '📆',
+    connected: false,
+    fields: [],
+    oauth: true,
+  },
+  {
+    id: 'voice_ai',
+    name: 'Voice AI Receptionist',
+    description: 'AI-powered phone answering and appointment booking',
+    logo: '🤖',
+    connected: false,
+    fields: [
+      { name: 'provider', label: 'Provider', type: 'select', options: ['bland', 'vapi', 'custom'] },
       { name: 'api_key', label: 'API Key', type: 'password' },
     ],
   },
@@ -40,13 +72,14 @@ const integrations = [
     ],
   },
   {
-    id: 'zapmail',
-    name: 'Zapmail',
-    description: 'Lead generation and enrichment',
+    id: 'n8n',
+    name: 'n8n Workflows',
+    description: 'Automate workflows and integrations',
     logo: '⚡',
     connected: false,
     fields: [
-      { name: 'api_key', label: 'API Key', type: 'password' },
+      { name: 'webhook_url', label: 'Webhook URL', type: 'text' },
+      { name: 'api_key', label: 'API Key (optional)', type: 'password' },
     ],
   },
 ]
@@ -92,6 +125,15 @@ export default function IntegrationsPage() {
           console.error('Failed to verify Pipedrive connection:', error)
         }
       }
+
+      // Pre-fill ReachInbox API key from environment
+      const reachInboxKey = process.env.NEXT_PUBLIC_REACHINBOX_API_KEY || 'ec7f57a3-e34d-425d-b838-f9b0a1a1a6ae'
+      setCredentials(prev => ({
+        ...prev,
+        reachinbox: {
+          api_key: reachInboxKey
+        }
+      }))
     }
     
     checkConnections()
@@ -203,26 +245,74 @@ export default function IntegrationsPage() {
             <CardContent>
               {activeIntegration === integration.id ? (
                 <div className="space-y-4">
+                  {integration.oauth ? (
+                    <div className="text-center py-4">
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Click the button below to connect with {integration.name}
+                      </p>
+                      <Button
+                        onClick={() => handleConnect(integration.id)}
+                        disabled={isLoading}
+                        className="w-full"
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Connecting...
+                          </>
+                        ) : (
+                          `Connect with ${integration.name}`
+                        )}
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
                   {integration.fields.map((field) => (
                     <div key={field.name}>
                       <label className="block text-sm font-medium mb-1">
                         {field.label}
                       </label>
-                      <input
-                        type={field.type}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        placeholder={`Enter ${field.label}`}
-                        value={credentials[integration.id]?.[field.name] || ''}
-                        onChange={(e) => {
-                          setCredentials({
-                            ...credentials,
-                            [integration.id]: {
-                              ...credentials[integration.id],
-                              [field.name]: e.target.value,
-                            },
-                          })
-                        }}
-                      />
+                      {field.type === 'select' ? (
+                        <select
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          value={credentials[integration.id]?.[field.name] || field.options?.[0]}
+                          onChange={(e) => {
+                            setCredentials({
+                              ...credentials,
+                              [integration.id]: {
+                                ...credentials[integration.id],
+                                [field.name]: e.target.value,
+                              },
+                            })
+                          }}
+                        >
+                          {field.options?.map((option) => (
+                            <option key={option} value={option}>
+                              {option.charAt(0).toUpperCase() + option.slice(1)}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type={field.type}
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          placeholder={`Enter ${field.label}`}
+                          value={field.readonly ? (typeof window !== 'undefined' ? window.location.origin + field.value : field.value) : (credentials[integration.id]?.[field.name] || '')}
+                          readOnly={field.readonly}
+                          disabled={field.readonly}
+                          onChange={(e) => {
+                            if (!field.readonly) {
+                              setCredentials({
+                                ...credentials,
+                                [integration.id]: {
+                                  ...credentials[integration.id],
+                                  [field.name]: e.target.value,
+                                },
+                              })
+                            }
+                          }}
+                        />
+                      )}
                     </div>
                   ))}
                   <div className="flex gap-2">
@@ -248,6 +338,8 @@ export default function IntegrationsPage() {
                       Cancel
                     </Button>
                   </div>
+                  </>
+                  )}
                 </div>
               ) : (
                 <div className="flex gap-2">

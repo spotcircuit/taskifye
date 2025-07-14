@@ -9,10 +9,7 @@ import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
-  Settings, Building, Users, Cable, Bell, Shield, 
-  CreditCard, Globe, Palette, Save, Key, Mail,
-  Clock, Database, Webhook, MessageSquare, Phone,
-  Calendar, Bot, Star
+  Building, Users, Bell, CreditCard, Save
 } from 'lucide-react'
 
 export default function SettingsPage() {
@@ -38,12 +35,6 @@ export default function SettingsPage() {
 
   const [integrations, setIntegrations] = useState({
     pipedrive: { connected: true, apiKey: '•••••••••••••••' },
-    twilio: { connected: false, accountSid: '', authToken: '' },
-    googleCalendar: { connected: false },
-    quickbooks: { connected: false },
-    reachInbox: { connected: false, apiKey: '', workspaceId: '' },
-    calendly: { connected: false, webhookUrl: '', apiKey: '' },
-    voiceAI: { connected: false, provider: 'bland', apiKey: '' },
   })
 
   return (
@@ -58,7 +49,7 @@ export default function SettingsPage() {
 
       {/* Settings Tabs */}
       <Tabs defaultValue="company" className="space-y-4">
-        <TabsList className="grid grid-cols-5 w-full max-w-3xl">
+        <TabsList className="grid grid-cols-4 w-full max-w-2xl">
           <TabsTrigger value="company" className="flex items-center gap-2">
             <Building className="h-4 w-4" />
             Company
@@ -66,10 +57,6 @@ export default function SettingsPage() {
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Users
-          </TabsTrigger>
-          <TabsTrigger value="integrations" className="flex items-center gap-2">
-            <Cable className="h-4 w-4" />
-            Integrations
           </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
@@ -226,175 +213,6 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        {/* Integrations */}
-        <TabsContent value="integrations" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            {/* Pipedrive */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Pipedrive CRM</CardTitle>
-                  <div className={`px-2 py-1 rounded-full text-xs ${
-                    integrations.pipedrive.connected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                  }`}>
-                    {integrations.pipedrive.connected ? 'Connected' : 'Not Connected'}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Sync deals, contacts, and activities with Pipedrive
-                </p>
-                <div className="space-y-2">
-                  <Label>API Key</Label>
-                  <Input 
-                    type="password" 
-                    value={integrations.pipedrive.apiKey}
-                    placeholder="Enter your Pipedrive API key"
-                  />
-                </div>
-                <Button variant={integrations.pipedrive.connected ? 'outline' : 'default'}>
-                  {integrations.pipedrive.connected ? 'Disconnect' : 'Connect'}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* ReachInbox */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">ReachInbox</CardTitle>
-                  <div className={`px-2 py-1 rounded-full text-xs ${
-                    integrations.reachInbox.connected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                  }`}>
-                    {integrations.reachInbox.connected ? 'Connected' : 'Not Connected'}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Email campaigns, SMS, and review management
-                </p>
-                <div className="space-y-2">
-                  <Label>API Key</Label>
-                  <Input placeholder="Enter your ReachInbox API key" />
-                  <Label>Workspace ID</Label>
-                  <Input placeholder="Enter your Workspace ID" />
-                </div>
-                <Button>Connect</Button>
-              </CardContent>
-            </Card>
-
-            {/* Gmail Calendar */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Gmail Calendar</CardTitle>
-                  <div className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
-                    Not Connected
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Sync appointments with Gmail Calendar
-                </p>
-                <Button>
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Connect Gmail Account
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Calendly */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Calendly</CardTitle>
-                  <div className={`px-2 py-1 rounded-full text-xs ${
-                    integrations.calendly.connected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                  }`}>
-                    {integrations.calendly.connected ? 'Connected' : 'Not Connected'}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Automated appointment scheduling
-                </p>
-                <div className="space-y-2">
-                  <Label>API Key</Label>
-                  <Input placeholder="Enter your Calendly API key" />
-                  <Label>Webhook URL</Label>
-                  <Input 
-                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/api/webhooks/calendly`}
-                    disabled
-                    className="bg-gray-50"
-                  />
-                </div>
-                <Button>Configure</Button>
-              </CardContent>
-            </Card>
-
-            {/* Voice AI */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Voice AI Receptionist</CardTitle>
-                  <div className={`px-2 py-1 rounded-full text-xs ${
-                    integrations.voiceAI.connected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                  }`}>
-                    {integrations.voiceAI.connected ? 'Connected' : 'Not Connected'}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  AI-powered phone answering and appointment booking
-                </p>
-                <div className="space-y-2">
-                  <Label>Provider</Label>
-                  <Select defaultValue="bland">
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="bland">Bland.ai</SelectItem>
-                      <SelectItem value="vapi">Vapi</SelectItem>
-                      <SelectItem value="custom">Custom</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Label>API Key</Label>
-                  <Input placeholder="Enter your Voice AI API key" />
-                </div>
-                <Button>
-                  <Phone className="mr-2 h-4 w-4" />
-                  Configure Voice AI
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* n8n */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">n8n Workflows</CardTitle>
-                  <Webhook className="h-5 w-5 text-muted-foreground" />
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Automate workflows and integrations
-                </p>
-                <div className="space-y-2">
-                  <Label>Webhook URL</Label>
-                  <Input placeholder="https://your-n8n-instance.com/webhook/..." />
-                </div>
-                <Button>Configure</Button>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
 
         {/* Notifications */}
         <TabsContent value="notifications" className="space-y-4">
