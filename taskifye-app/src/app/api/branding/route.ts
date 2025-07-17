@@ -8,14 +8,14 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       branding: {
-        companyName: client.companyName,
-        slogan: client.slogan,
-        logoUrl: client.logoUrl,
-        primaryColor: client.primaryColor,
-        secondaryColor: client.secondaryColor,
-        supportEmail: client.supportEmail,
-        supportPhone: client.supportPhone,
-        website: client.website,
+        companyName: client.branding?.companyName || client.companyName,
+        slogan: client.branding?.tagline || '',
+        logoUrl: client.branding?.logoUrl || '',
+        primaryColor: client.branding?.primaryColor || '#3b82f6',
+        secondaryColor: client.branding?.secondaryColor || '#10b981',
+        supportEmail: client.branding?.supportEmail || client.email || '',
+        supportPhone: client.branding?.supportPhone || client.phone || '',
+        website: client.website || '',
       }
     })
   } catch (error: any) {

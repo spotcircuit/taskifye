@@ -22,7 +22,9 @@
       "Bash(npx prisma generate:*)",
       "Bash(ls:*)",
       "Bash(npm:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npx tsc:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

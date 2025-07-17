@@ -55,23 +55,23 @@ export default function SchedulePage() {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Schedule</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Schedule</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Manage technician schedules and appointments
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" size="sm" className="sm:size-default">
             <Filter className="mr-2 h-4 w-4" />
-            Filter
+            <span className="hidden sm:inline">Filter</span>
           </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          <Button className="bg-blue-600 hover:bg-blue-700" size="sm">
             <Plus className="mr-2 h-4 w-4" />
-            New Appointment
+            <span className="hidden sm:inline">New Appointment</span>
           </Button>
         </div>
       </div>
@@ -79,17 +79,17 @@ export default function SchedulePage() {
       {/* Date Navigation */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="icon">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <h2 className="text-xl font-semibold">{formatDate(selectedDate)}</h2>
-              <Button variant="outline" size="icon">
+              <h2 className="text-base sm:text-xl font-semibold text-center flex-1 sm:flex-none">{formatDate(selectedDate)}</h2>
+              <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 justify-center">
               <Button
                 variant={viewType === 'day' ? 'default' : 'outline'}
                 size="sm"
@@ -109,58 +109,94 @@ export default function SchedulePage() {
         </CardHeader>
       </Card>
 
-      {/* Schedule Grid */}
+      {/* Schedule Grid - Mobile: Show simplified list view */}
       <div className="bg-white rounded-lg border overflow-hidden">
-        <div className="grid grid-cols-5 border-b">
-          <div className="p-4 border-r bg-gray-50">
-            <span className="text-sm font-medium text-muted-foreground">Time</span>
-          </div>
-          {technicians.map((tech) => (
-            <div key={tech.id} className="p-4 border-r text-center">
-              <div className="flex items-center justify-center gap-2">
-                <div className={`w-3 h-3 rounded-full ${tech.color}`} />
-                <span className="text-sm font-medium">{tech.name}</span>
-              </div>
+        {/* Desktop Grid View */}
+        <div className="hidden md:block">
+          <div className="grid grid-cols-5 border-b">
+            <div className="p-4 border-r bg-gray-50">
+              <span className="text-sm font-medium text-muted-foreground">Time</span>
             </div>
-          ))}
-        </div>
-
-        <div className="relative">
-          {/* Time slots */}
-          {timeSlots.map((time, index) => (
-            <div key={time} className="grid grid-cols-5 border-b" style={{ height: '80px' }}>
-              <div className="p-4 border-r bg-gray-50">
-                <span className="text-sm text-muted-foreground">{time}</span>
-              </div>
-              {technicians.map((tech) => (
-                <div key={tech.id} className="border-r relative" />
-              ))}
-            </div>
-          ))}
-
-          {/* Appointments overlay */}
-          {sampleAppointments.map((apt) => {
-            const position = getAppointmentPosition(apt.time, apt.duration)
-            const techIndex = technicians.findIndex(t => t.id === apt.techId)
-            return (
-              <div
-                key={apt.id}
-                className={`absolute p-3 m-1 rounded-lg text-white text-sm cursor-pointer hover:shadow-lg transition-shadow ${getAppointmentStyle(apt.techId)}`}
-                style={{
-                  ...position,
-                  left: `${20 + techIndex * 20}%`,
-                  width: 'calc(20% - 8px)'
-                }}
-              >
-                <p className="font-semibold">{apt.customer}</p>
-                <p className="text-xs opacity-90">{apt.service}</p>
-                <div className="flex items-center gap-1 mt-1">
-                  <MapPin className="h-3 w-3" />
-                  <span className="text-xs">{apt.address}</span>
+            {technicians.map((tech) => (
+              <div key={tech.id} className="p-4 border-r text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <div className={`w-3 h-3 rounded-full ${tech.color}`} />
+                  <span className="text-sm font-medium">{tech.name}</span>
                 </div>
               </div>
-            )
-          })}
+            ))}
+          </div>
+
+          <div className="relative">
+            {/* Time slots */}
+            {timeSlots.map((time, index) => (
+              <div key={time} className="grid grid-cols-5 border-b" style={{ height: '80px' }}>
+                <div className="p-4 border-r bg-gray-50">
+                  <span className="text-sm text-muted-foreground">{time}</span>
+                </div>
+                {technicians.map((tech) => (
+                  <div key={tech.id} className="border-r relative" />
+                ))}
+              </div>
+            ))}
+
+            {/* Appointments overlay */}
+            {sampleAppointments.map((apt) => {
+              const position = getAppointmentPosition(apt.time, apt.duration)
+              const techIndex = technicians.findIndex(t => t.id === apt.techId)
+              return (
+                <div
+                  key={apt.id}
+                  className={`absolute p-3 m-1 rounded-lg text-white text-sm cursor-pointer hover:shadow-lg transition-shadow ${getAppointmentStyle(apt.techId)}`}
+                  style={{
+                    ...position,
+                    left: `${20 + techIndex * 20}%`,
+                    width: 'calc(20% - 8px)'
+                  }}
+                >
+                  <p className="font-semibold">{apt.customer}</p>
+                  <p className="text-xs opacity-90">{apt.service}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <MapPin className="h-3 w-3" />
+                    <span className="text-xs">{apt.address}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Mobile List View */}
+        <div className="md:hidden">
+          <div className="divide-y">
+            {sampleAppointments.map((apt) => {
+              const tech = technicians.find(t => t.id === apt.techId)
+              return (
+                <div key={apt.id} className="p-4 hover:bg-gray-50">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className={`w-3 h-3 rounded-full ${tech?.color}`} />
+                        <span className="text-sm font-medium">{tech?.name}</span>
+                      </div>
+                      <h3 className="font-semibold">{apt.customer}</h3>
+                      <p className="text-sm text-muted-foreground">{apt.service}</p>
+                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{apt.time} ({apt.duration}h)</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          <span>{apt.address}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
 

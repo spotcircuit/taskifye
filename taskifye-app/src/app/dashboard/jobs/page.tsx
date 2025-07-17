@@ -302,7 +302,7 @@ export default function JobsPage() {
     return (
       <div 
         ref={setNodeRef}
-        className={`bg-gray-50 rounded-lg p-4 transition-all ${
+        className={`bg-gray-50 rounded-lg p-4 transition-all min-w-[280px] sm:min-w-0 ${
           isDragging ? 'bg-gray-100' : ''
         } ${isOver ? 'bg-blue-50 ring-2 ring-blue-300' : ''}`}
       >
@@ -392,12 +392,12 @@ export default function JobsPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-wrap gap-3">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+        <div className="relative flex-1 w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search jobs, customers..."
-            className="pl-10"
+            className="pl-10 w-full"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -524,7 +524,7 @@ export default function JobsPage() {
                 onDragEnd={handleDragEnd}
                 onDragCancel={handleDragCancel}
               >
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 sm:overflow-visible">
                   {jobStages.map((stage) => (
                     <DroppableStage key={stage.id} stage={stage}>
                       <div className="flex items-center justify-between mb-4">

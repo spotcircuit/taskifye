@@ -63,29 +63,32 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Good morning! 👋</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Good morning! 👋</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Here's what's happening with your business today
           </p>
         </div>
         <div className="flex gap-2">
           <Button 
             onClick={() => router.push('/dashboard/jobs/new')}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-none"
           >
             <Plus className="mr-2 h-4 w-4" />
-            New Job
+            <span className="hidden sm:inline">New Job</span>
+            <span className="sm:hidden">Job</span>
           </Button>
           <Button 
             variant="outline"
             onClick={() => router.push('/dashboard/contacts?action=new')}
+            className="flex-1 sm:flex-none"
           >
             <UserPlus className="mr-2 h-4 w-4" />
-            Add Customer
+            <span className="hidden sm:inline">Add Customer</span>
+            <span className="sm:hidden">Customer</span>
           </Button>
         </div>
       </div>

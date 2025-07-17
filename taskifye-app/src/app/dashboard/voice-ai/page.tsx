@@ -102,12 +102,12 @@ export default function VoiceAIPage() {
   ]
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Voice AI Receptionist</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Voice AI Receptionist</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             AI-powered phone answering and appointment booking
           </p>
         </div>
@@ -118,13 +118,13 @@ export default function VoiceAIPage() {
               onCheckedChange={setIsActive}
               className="data-[state=checked]:bg-green-600"
             />
-            <Label className="font-medium">
+            <Label className="font-medium text-sm sm:text-base">
               {isActive ? 'Active' : 'Inactive'}
             </Label>
           </div>
-          <Button variant="outline">
+          <Button variant="outline" size="sm" className="sm:size-default">
             <Settings className="mr-2 h-4 w-4" />
-            Configure
+            <span className="hidden sm:inline">Configure</span>
           </Button>
         </div>
       </div>
@@ -159,13 +159,15 @@ export default function VoiceAIPage() {
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5 max-w-3xl">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="architecture">Architecture</TabsTrigger>
-          <TabsTrigger value="settings">AI Settings</TabsTrigger>
-          <TabsTrigger value="scripts">Call Scripts</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <TabsList className="grid w-full grid-cols-5 max-w-3xl min-w-[500px]">
+            <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 sm:px-4">Overview</TabsTrigger>
+            <TabsTrigger value="architecture" className="text-xs sm:text-sm px-2 sm:px-4">Architecture</TabsTrigger>
+            <TabsTrigger value="settings" className="text-xs sm:text-sm px-2 sm:px-4">AI Settings</TabsTrigger>
+            <TabsTrigger value="scripts" className="text-xs sm:text-sm px-2 sm:px-4">Call Scripts</TabsTrigger>
+            <TabsTrigger value="analytics" className="text-xs sm:text-sm px-2 sm:px-4">Analytics</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 lg:grid-cols-2">
@@ -182,25 +184,25 @@ export default function VoiceAIPage() {
               <CardContent>
                 <div className="space-y-4">
                   {recentCalls.map((call) => (
-                    <div key={call.id} className="flex items-center justify-between p-3 rounded-lg border">
-                      <div className="flex items-center gap-4">
-                        <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                    <div key={call.id} className="flex items-center justify-between p-3 rounded-lg border gap-2">
+                      <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                        <div className={`h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                           call.status === 'success' ? 'bg-green-100' : 'bg-blue-100'
                         }`}>
-                          <Phone className={`h-5 w-5 ${
+                          <Phone className={`h-4 w-4 sm:h-5 sm:w-5 ${
                             call.status === 'success' ? 'text-green-600' : 'text-blue-600'
                           }`} />
                         </div>
-                        <div>
-                          <p className="font-medium">{call.name}</p>
-                          <p className="text-sm text-muted-foreground">{call.caller}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm sm:text-base truncate">{call.name}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate">{call.caller}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">{call.outcome}</p>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-xs sm:text-sm font-medium">{call.outcome}</p>
                         <p className="text-xs text-muted-foreground">{call.duration} • {call.time}</p>
                       </div>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="flex-shrink-0">
                         <PlayCircle className="h-4 w-4" />
                       </Button>
                     </div>

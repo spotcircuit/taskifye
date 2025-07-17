@@ -93,6 +93,18 @@ const integrations = [
       { name: 'account_id', label: 'Account ID', type: 'text' },
     ],
   },
+  {
+    id: 'quickbooks',
+    name: 'QuickBooks',
+    description: 'Accounting, invoicing, and financial management',
+    logo: '💰',
+    connected: false,
+    fields: [
+      { name: 'client_id', label: 'Client ID', type: 'text' },
+      { name: 'client_secret', label: 'Client Secret', type: 'password' },
+      { name: 'environment', label: 'Environment', type: 'select', options: ['sandbox', 'production'] },
+    ],
+  },
 ]
 
 export default function IntegrationsPage() {
@@ -138,7 +150,7 @@ export default function IntegrationsPage() {
       }
 
       // Pre-fill ReachInbox API key from environment
-      const reachInboxKey = process.env.NEXT_PUBLIC_REACHINBOX_API_KEY || 'ec7f57a3-e34d-425d-b838-f9b0a1a1a6ae'
+      const reachInboxKey = process.env.NEXT_PUBLIC_REACHINBOX_API_KEY || ''
       setCredentials(prev => ({
         ...prev,
         reachinbox: {
@@ -209,15 +221,15 @@ export default function IntegrationsPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Integrations</h1>
-        <p className="text-muted-foreground">
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold">Integrations</h1>
+        <p className="text-muted-foreground text-sm sm:text-base mt-1">
           Connect your favorite tools to Taskifye
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         {integrations.map((integration) => {
           const isConnected = connectionStatus[integration.id] || false
           const isLoading = loading[integration.id] || false
@@ -225,16 +237,16 @@ export default function IntegrationsPage() {
           return (
           <Card key={integration.id}>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">{integration.logo}</span>
-                  <div>
-                    <CardTitle>{integration.name}</CardTitle>
-                    <CardDescription>{integration.description}</CardDescription>
+                  <span className="text-2xl sm:text-3xl">{integration.logo}</span>
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-base sm:text-lg">{integration.name}</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">{integration.description}</CardDescription>
                   </div>
                 </div>
                 {isConnected ? (
-                  <div className="text-right">
+                  <div className="flex flex-col items-start sm:items-end">
                     <div className="flex items-center gap-2 text-sm text-green-600">
                       <Check className="h-4 w-4" />
                       Connected

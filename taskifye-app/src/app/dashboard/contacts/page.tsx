@@ -13,6 +13,7 @@ import {
   Filter, MoreVertical, Edit, Trash2, Eye
 } from 'lucide-react'
 import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { ContactDetailModal } from '@/components/contacts/contact-detail-modal'
 
 interface Contact {
   id: number
@@ -58,6 +59,8 @@ export default function ContactsPage() {
     address: '',
     notes: ''
   })
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
+  const [showDetailModal, setShowDetailModal] = useState(false)
 
   useEffect(() => {
     fetchContacts()
@@ -246,6 +249,16 @@ export default function ContactsPage() {
     })
   }
 
+  const handleViewContact = (contact: Contact) => {
+    setSelectedContact(contact)
+    setShowDetailModal(true)
+  }
+
+  const handleEditContact = () => {
+    // TODO: Implement edit functionality
+    console.log('Edit contact:', selectedContact)
+  }
+
   const filteredContacts = contacts.filter(contact => {
     const matchesSearch = contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          contact.email?.[0]?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -274,12 +287,12 @@ export default function ContactsPage() {
   ]
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Contacts & Leads</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Contacts & Leads</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Manage your customer database and track leads
           </p>
         </div>
@@ -345,7 +358,7 @@ export default function ContactsPage() {
                     </thead>
                     <tbody>
                       {filteredContacts.map((contact) => (
-                        <tr key={contact.id} className="border-b hover:bg-muted/50">
+                        <tr key={contact.id} className="border-b hover:bg-muted/50 cursor-pointer" onClick={() => handleViewContact(contact)}>
                           <td className="p-4">
                             <div className="font-medium">{contact.name}</div>
                             <div className="text-sm text-muted-foreground">
@@ -396,8 +409,15 @@ export default function ContactsPage() {
                             </div>
                           </td>
                           <td className="p-4">
-                            <Button variant="ghost" size="icon">
-                              <MoreVertical className="h-4 w-4" />
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleViewContact(contact)
+                              }}
+                            >
+                              <Eye className="h-4 w-4" />
                             </Button>
                           </td>
                         </tr>
@@ -430,7 +450,7 @@ export default function ContactsPage() {
                     {filteredContacts
                       .filter(c => (c.deals_count || 0) > 0)
                       .map((contact) => (
-                        <tr key={contact.id} className="border-b hover:bg-muted/50">
+                        <tr key={contact.id} className="border-b hover:bg-muted/50 cursor-pointer" onClick={() => handleViewContact(contact)}>
                           <td className="p-4">
                             <div className="font-medium">{contact.name}</div>
                             {contact.organization && (
@@ -473,10 +493,16 @@ export default function ContactsPage() {
                           </td>
                           <td className="p-4">
                             <div className="flex gap-1">
-                              <Button variant="ghost" size="icon">
+                              <Button variant="ghost" size="icon" onClick={(e) => {
+                                e.stopPropagation()
+                                handleViewContact(contact)
+                              }}>
                                 <Eye className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="icon">
+                              <Button variant="ghost" size="icon" onClick={(e) => {
+                                e.stopPropagation()
+                                handleEditContact()
+                              }}>
                                 <Edit className="h-4 w-4" />
                               </Button>
                             </div>
@@ -509,7 +535,7 @@ export default function ContactsPage() {
                     {filteredContacts
                       .filter(c => (c.deals_count || 0) === 0)
                       .map((contact) => (
-                        <tr key={contact.id} className="border-b hover:bg-muted/50">
+                        <tr key={contact.id} className="border-b hover:bg-muted/50 cursor-pointer" onClick={() => handleViewContact(contact)}>
                           <td className="p-4">
                             <div className="font-medium">{contact.name}</div>
                             {contact.organization && (
@@ -732,6 +758,19 @@ export default function ContactsPage() {
       </div>
         </TabsContent>
       </Tabs>
+
+      {/* Contact Detail Modal */}
+      {selectedContact && (
+        <ContactDetailModal
+          contact={selectedContact}
+          isOpen={showDetailModal}
+          onClose={() => {
+            setShowDetailModal(false)
+            setSelectedContact(null)
+          }}
+          onEdit={handleEditContact}
+        />
+      )}
     </div>
   )
 }

@@ -39,39 +39,41 @@ export default function SettingsPage() {
   })
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-2xl sm:text-3xl font-bold">Settings</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
           Manage your account and system preferences
         </p>
       </div>
 
       {/* Settings Tabs */}
       <Tabs defaultValue="company" className="space-y-4">
-        <TabsList className="grid grid-cols-5 w-full max-w-3xl">
-          <TabsTrigger value="company" className="flex items-center gap-2">
-            <Building className="h-4 w-4" />
-            Company
-          </TabsTrigger>
-          <TabsTrigger value="branding" className="flex items-center gap-2">
-            <Palette className="h-4 w-4" />
-            Branding
-          </TabsTrigger>
-          <TabsTrigger value="users" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Users
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
-            <Bell className="h-4 w-4" />
-            Notifications
-          </TabsTrigger>
-          <TabsTrigger value="billing" className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
-            Billing
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <TabsList className="grid grid-cols-5 w-full max-w-3xl min-w-[500px]">
+            <TabsTrigger value="company" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 sm:px-4">
+              <Building className="h-4 w-4" />
+              <span className="text-xs sm:text-sm">Company</span>
+            </TabsTrigger>
+            <TabsTrigger value="branding" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 sm:px-4">
+              <Palette className="h-4 w-4" />
+              <span className="text-xs sm:text-sm">Branding</span>
+            </TabsTrigger>
+            <TabsTrigger value="users" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 sm:px-4">
+              <Users className="h-4 w-4" />
+              <span className="text-xs sm:text-sm">Users</span>
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 sm:px-4">
+              <Bell className="h-4 w-4" />
+              <span className="text-xs sm:text-sm">Alerts</span>
+            </TabsTrigger>
+            <TabsTrigger value="billing" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 sm:px-4">
+              <CreditCard className="h-4 w-4" />
+              <span className="text-xs sm:text-sm">Billing</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Company Settings */}
         <TabsContent value="company" className="space-y-4">
@@ -178,14 +180,14 @@ export default function SettingsPage() {
         <TabsContent value="users" className="space-y-4">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <CardTitle>Team Members</CardTitle>
                   <CardDescription>
                     Manage users and their permissions
                   </CardDescription>
                 </div>
-                <Button>
+                <Button className="w-full sm:w-auto">
                   <Users className="mr-2 h-4 w-4" />
                   Add User
                 </Button>
@@ -199,16 +201,16 @@ export default function SettingsPage() {
                   { name: 'Sarah Lopez', email: 'sarah@company.com', role: 'Technician', status: 'Active' },
                   { name: 'Office Manager', email: 'office@company.com', role: 'Manager', status: 'Active' },
                 ].map((user) => (
-                  <div key={user.email} className="flex items-center justify-between p-4 rounded-lg border">
+                  <div key={user.email} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-lg border gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-600 to-purple-600" />
-                      <div>
-                        <p className="font-medium">{user.name}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">{user.name}</p>
+                        <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
+                    <div className="flex items-center gap-4 justify-between sm:justify-end">
+                      <div className="text-left sm:text-right">
                         <p className="text-sm font-medium">{user.role}</p>
                         <p className="text-xs text-green-600">{user.status}</p>
                       </div>
@@ -325,14 +327,14 @@ export default function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="p-6 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                <div className="flex items-center justify-between">
+              <div className="p-4 sm:p-6 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
-                    <h3 className="text-2xl font-bold">Professional Plan</h3>
-                    <p className="mt-1 opacity-90">Unlimited users, all features included</p>
+                    <h3 className="text-xl sm:text-2xl font-bold">Professional Plan</h3>
+                    <p className="mt-1 opacity-90 text-sm sm:text-base">Unlimited users, all features included</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-3xl font-bold">$1,000</p>
+                  <div className="text-left sm:text-right">
+                    <p className="text-2xl sm:text-3xl font-bold">$1,000</p>
                     <p className="text-sm opacity-90">per month</p>
                   </div>
                 </div>

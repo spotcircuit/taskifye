@@ -28,13 +28,13 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
         const client = await ClientService.getCurrentClient()
         
         const clientBranding: BrandingConfig = {
-          companyName: client.companyName,
-          slogan: client.slogan || undefined,
-          logoUrl: client.logoUrl || undefined,
-          primaryColor: client.primaryColor || defaultBranding.primaryColor,
-          secondaryColor: client.secondaryColor || defaultBranding.secondaryColor,
-          supportEmail: client.supportEmail || defaultBranding.supportEmail,
-          supportPhone: client.supportPhone || defaultBranding.supportPhone,
+          companyName: client.branding?.companyName || client.companyName,
+          slogan: client.branding?.tagline || undefined,
+          logoUrl: client.branding?.logoUrl || undefined,
+          primaryColor: client.branding?.primaryColor || defaultBranding.primaryColor,
+          secondaryColor: client.branding?.secondaryColor || defaultBranding.secondaryColor,
+          supportEmail: client.branding?.supportEmail || client.email || defaultBranding.supportEmail,
+          supportPhone: client.branding?.supportPhone || client.phone || defaultBranding.supportPhone,
           website: client.website || defaultBranding.website,
         }
         

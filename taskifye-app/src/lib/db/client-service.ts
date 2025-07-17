@@ -3,11 +3,11 @@ import { BrandingConfig } from '@/types/branding'
 
 const prisma = new PrismaClient()
 
-// Helper function to get current tenant ID from session/auth
-function getCurrentTenantId(): string {
+// Helper function to get current client ID from session/auth
+function getCurrentClientId(): string {
   // In a real app, you'd get this from your auth session
-  // For now, we'll use a mock tenant ID
-  return 'demo-tenant-123'
+  // For now, we'll use a mock client ID
+  return 'demo-client-123'
 }
 
 // Helper function to encrypt API keys (basic example)
@@ -23,179 +23,237 @@ function decryptApiKey(encryptedKey: string): string {
 }
 
 export class ClientService {
-  // Get current tenant data
+  // Get current client data with branding and API settings
   static async getCurrentClient() {
-    const tenantId = getCurrentTenantId()
-    const tenant = await prisma.tenant.findUnique({
-      where: { id: tenantId }
+    const clientId = getCurrentClientId()
+    const client = await prisma.client.findUnique({
+      where: { id: clientId },
+      include: {
+        branding: true,
+        apiSettings: true,
+        agency: true
+      }
     })
     
-    if (!tenant) {
-      throw new Error('Tenant not found')
+    if (!client) {
+      throw new Error('Client not found')
     }
 
-    const settings = tenant.settings as any || {}
-    const apiKeys = tenant.apiKeys as any || {}
+    const settings = client.settings as any || {}
 
-    // Decrypt API keys before returning
+    // Return client data with decrypted API keys
     return {
-      id: tenant.id,
-      companyName: tenant.name,
-      slug: tenant.slug,
+      id: client.id,
+      companyName: client.name,
+      slug: client.slug,
+      businessType: client.businessType,
+      email: client.email,
+      phone: client.phone,
+      website: client.website,
       settings,
-      // Branding fields from settings
-      logoUrl: settings.branding?.logoUrl,
-      primaryColor: settings.branding?.primaryColor || '#3b82f6',
-      secondaryColor: settings.branding?.secondaryColor || '#10b981',
-      slogan: settings.branding?.slogan,
-      supportEmail: settings.branding?.supportEmail,
-      supportPhone: settings.branding?.supportPhone,
-      website: settings.branding?.website,
-      // Decrypt API keys
-      pipedriveApiKey: apiKeys.pipedriveApiKey ? decryptApiKey(apiKeys.pipedriveApiKey) : null,
-      reachinboxApiKey: apiKeys.reachinboxApiKey ? decryptApiKey(apiKeys.reachinboxApiKey) : null,
-      calendlyApiKey: apiKeys.calendlyApiKey ? decryptApiKey(apiKeys.calendlyApiKey) : null,
+      agency: client.agency,
+      // Branding fields
+      branding: client.branding ? {
+        logoUrl: client.branding.logoUrl,
+        faviconUrl: client.branding.faviconUrl,
+        primaryColor: client.branding.primaryColor,
+        secondaryColor: client.branding.secondaryColor,
+        accentColor: client.branding.accentColor,
+        companyName: client.branding.companyName,
+        tagline: client.branding.tagline,
+        supportEmail: client.branding.supportEmail,
+        supportPhone: client.branding.supportPhone,
+        customCss: client.branding.customCss,
+      } : null,
+      // Decrypted API keys
+      apiSettings: client.apiSettings ? {
+        pipedriveApiKey: client.apiSettings.pipedriveApiKey ? decryptApiKey(client.apiSettings.pipedriveApiKey) : null,
+        pipedriveCompanyDomain: client.apiSettings.pipedriveCompanyDomain,
+        twilioAccountSid: client.apiSettings.twilioAccountSid,
+        twilioAuthToken: client.apiSettings.twilioAuthToken ? decryptApiKey(client.apiSettings.twilioAuthToken) : null,
+        twilioPhoneNumber: client.apiSettings.twilioPhoneNumber,
+        reachInboxApiKey: client.apiSettings.reachInboxApiKey ? decryptApiKey(client.apiSettings.reachInboxApiKey) : null,
+        reachInboxWorkspaceId: client.apiSettings.reachInboxWorkspaceId,
+        quickbooksClientId: client.apiSettings.quickbooksClientId,
+        quickbooksRealmId: client.apiSettings.quickbooksRealmId,
+        googleMapsApiKey: client.apiSettings.googleMapsApiKey ? decryptApiKey(client.apiSettings.googleMapsApiKey) : null,
+        openAiApiKey: client.apiSettings.openAiApiKey ? decryptApiKey(client.apiSettings.openAiApiKey) : null,
+      } : null
     }
   }
 
-  // Update tenant branding
+  // Update client branding
   static async updateBranding(branding: Partial<BrandingConfig>) {
-    const tenantId = getCurrentTenantId()
+    const clientId = getCurrentClientId()
     
-    // Get current settings
-    const tenant = await prisma.tenant.findUnique({
-      where: { id: tenantId }
+    // Check if branding exists
+    const existingBranding = await prisma.branding.findUnique({
+      where: { clientId }
     })
     
-    if (!tenant) {
-      throw new Error('Tenant not found')
+    if (existingBranding) {
+      await prisma.branding.update({
+        where: { clientId },
+        data: branding
+      })
+    } else {
+      await prisma.branding.create({
+        data: {
+          clientId,
+          ...branding
+        }
+      })
     }
-
-    const currentSettings = tenant.settings as any || {}
-    const updatedSettings = {
-      ...currentSettings,
-      branding: {
-        ...currentSettings.branding,
-        ...branding
-      }
-    }
-
-    await prisma.tenant.update({
-      where: { id: tenantId },
-      data: {
-        settings: updatedSettings,
-        updatedAt: new Date(),
-      }
-    })
   }
 
-  // Update API keys
-  static async updateApiKeys(keys: {
+  // Update API settings
+  static async updateApiSettings(keys: {
     pipedriveApiKey?: string
-    reachinboxApiKey?: string
-    calendlyApiKey?: string
+    pipedriveCompanyDomain?: string
+    twilioAccountSid?: string
+    twilioAuthToken?: string
+    twilioPhoneNumber?: string
+    reachInboxApiKey?: string
+    reachInboxWorkspaceId?: string
+    quickbooksClientId?: string
+    quickbooksClientSecret?: string
+    quickbooksRealmId?: string
+    quickbooksRefreshToken?: string
+    googleMapsApiKey?: string
+    openAiApiKey?: string
   }) {
-    const tenantId = getCurrentTenantId()
+    const clientId = getCurrentClientId()
     
-    // Get current API keys
-    const tenant = await prisma.tenant.findUnique({
-      where: { id: tenantId }
+    // Check if API settings exist
+    const existingSettings = await prisma.apiSettings.findUnique({
+      where: { clientId }
     })
     
-    if (!tenant) {
-      throw new Error('Tenant not found')
+    // Prepare data with encrypted keys
+    const data: any = {}
+    
+    if (keys.pipedriveApiKey) data.pipedriveApiKey = encryptApiKey(keys.pipedriveApiKey)
+    if (keys.pipedriveCompanyDomain) data.pipedriveCompanyDomain = keys.pipedriveCompanyDomain
+    if (keys.twilioAccountSid) data.twilioAccountSid = keys.twilioAccountSid
+    if (keys.twilioAuthToken) data.twilioAuthToken = encryptApiKey(keys.twilioAuthToken)
+    if (keys.twilioPhoneNumber) data.twilioPhoneNumber = keys.twilioPhoneNumber
+    if (keys.reachInboxApiKey) data.reachInboxApiKey = encryptApiKey(keys.reachInboxApiKey)
+    if (keys.reachInboxWorkspaceId) data.reachInboxWorkspaceId = keys.reachInboxWorkspaceId
+    if (keys.quickbooksClientId) data.quickbooksClientId = keys.quickbooksClientId
+    if (keys.quickbooksClientSecret) data.quickbooksClientSecret = encryptApiKey(keys.quickbooksClientSecret)
+    if (keys.quickbooksRealmId) data.quickbooksRealmId = keys.quickbooksRealmId
+    if (keys.quickbooksRefreshToken) data.quickbooksRefreshToken = encryptApiKey(keys.quickbooksRefreshToken)
+    if (keys.googleMapsApiKey) data.googleMapsApiKey = encryptApiKey(keys.googleMapsApiKey)
+    if (keys.openAiApiKey) data.openAiApiKey = encryptApiKey(keys.openAiApiKey)
+    
+    if (existingSettings) {
+      await prisma.apiSettings.update({
+        where: { clientId },
+        data
+      })
+    } else {
+      await prisma.apiSettings.create({
+        data: {
+          clientId,
+          ...data
+        }
+      })
     }
-
-    const currentApiKeys = tenant.apiKeys as any || {}
-    const updatedApiKeys = { ...currentApiKeys }
-
-    // Encrypt API keys before storing
-    if (keys.pipedriveApiKey) {
-      updatedApiKeys.pipedriveApiKey = encryptApiKey(keys.pipedriveApiKey)
-    }
-    if (keys.reachinboxApiKey) {
-      updatedApiKeys.reachinboxApiKey = encryptApiKey(keys.reachinboxApiKey)
-    }
-    if (keys.calendlyApiKey) {
-      updatedApiKeys.calendlyApiKey = encryptApiKey(keys.calendlyApiKey)
-    }
-
-    await prisma.tenant.update({
-      where: { id: tenantId },
-      data: {
-        apiKeys: updatedApiKeys,
-        updatedAt: new Date(),
-      }
-    })
   }
 
-  // Update business settings
+  // Update client settings
   static async updateSettings(settings: {
     businessType?: string
     timezone?: string
     currency?: string
   }) {
-    const tenantId = getCurrentTenantId()
+    const clientId = getCurrentClientId()
     
     // Get current settings
-    const tenant = await prisma.tenant.findUnique({
-      where: { id: tenantId }
+    const client = await prisma.client.findUnique({
+      where: { id: clientId }
     })
     
-    if (!tenant) {
-      throw new Error('Tenant not found')
+    if (!client) {
+      throw new Error('Client not found')
     }
 
-    const currentSettings = tenant.settings as any || {}
+    const currentSettings = client.settings as any || {}
     const updatedSettings = {
       ...currentSettings,
       ...settings
     }
 
-    await prisma.tenant.update({
-      where: { id: tenantId },
+    await prisma.client.update({
+      where: { id: clientId },
       data: {
-        settings: updatedSettings,
-        updatedAt: new Date(),
+        settings: updatedSettings
       }
     })
   }
 
-  // Initialize demo tenant (for development)
+  // Initialize demo client (for development)
   static async initializeDemoClient() {
-    const tenantId = getCurrentTenantId()
+    const clientId = getCurrentClientId()
+    const agencyId = 'demo-agency-123'
     
-    // Check if tenant already exists
-    const existing = await prisma.tenant.findUnique({
-      where: { id: tenantId }
+    // Check if agency exists
+    let agency = await prisma.agency.findUnique({
+      where: { id: agencyId }
+    })
+    
+    if (!agency) {
+      agency = await prisma.agency.create({
+        data: {
+          id: agencyId,
+          name: 'Demo Agency',
+          slug: 'demo-agency',
+          email: 'demo@agency.com'
+        }
+      })
+    }
+    
+    // Check if client already exists
+    const existing = await prisma.client.findUnique({
+      where: { id: clientId }
     })
     
     if (existing) {
       return existing
     }
 
-    // Create demo tenant
-    const demoTenant = await prisma.tenant.create({
+    // Create demo client
+    const demoClient = await prisma.client.create({
       data: {
-        id: tenantId,
+        id: clientId,
+        agencyId,
         name: 'Demo HVAC Company',
         slug: 'demo-hvac',
+        businessType: 'hvac',
+        email: 'info@demohvac.com',
+        phone: '1-800-DEMO-HVAC',
+        website: 'https://demohvac.com',
         settings: {
-          businessType: 'hvac',
           timezone: 'America/New_York',
-          currency: 'USD',
-          branding: {
-            slogan: 'Your Comfort is Our Priority',
-            supportEmail: 'support@demohvac.com',
-            supportPhone: '1-800-DEMO-HVAC',
-            website: 'https://demohvac.com',
-            primaryColor: '#3b82f6',
-            secondaryColor: '#10b981'
-          }
+          currency: 'USD'
         }
       }
     })
+    
+    // Create default branding
+    await prisma.branding.create({
+      data: {
+        clientId,
+        companyName: 'Demo HVAC Company',
+        tagline: 'Your Comfort is Our Priority',
+        supportEmail: 'support@demohvac.com',
+        supportPhone: '1-800-DEMO-HVAC',
+        primaryColor: '#3b82f6',
+        secondaryColor: '#10b981',
+        accentColor: '#f59e0b'
+      }
+    })
 
-    return demoTenant
+    return demoClient
   }
 }
