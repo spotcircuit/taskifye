@@ -16,7 +16,8 @@ import {
   ArrowRight, ExternalLink, MoreVertical
 } from 'lucide-react'
 import { format, formatDistance } from 'date-fns'
-import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { PipedriveService } from '@/lib/integrations/pipedrive'
+import { useIntegrations } from '@/contexts/integrations-context'
 
 interface Activity {
   id: number
@@ -52,6 +53,7 @@ const priorityColors = {
 }
 
 export function ActivityFeed() {
+  const { status, isLoading: integrationsLoading } = useIntegrations()
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [filterType, setFilterType] = useState<string>('all')
@@ -68,22 +70,23 @@ export function ActivityFeed() {
   })
 
   useEffect(() => {
-    fetchActivities()
-  }, [])
+    if (!integrationsLoading && status.pipedrive) {
+      fetchActivities()
+    } else if (!integrationsLoading) {
+      setLoading(false)
+    }
+  }, [integrationsLoading, status.pipedrive])
 
   const fetchActivities = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) {
-      setLoading(false)
-      return
-    }
-
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       const response = await pipedrive.getActivities()
       
       if (response.success && response.data) {
         setActivities(response.data)
+      } else if (response.error === 'Pipedrive not configured') {
+        // Pipedrive is not configured, show empty state
+        setActivities([])
       }
     } catch (error) {
       console.error('Error fetching activities:', error)
@@ -93,11 +96,10 @@ export function ActivityFeed() {
   }
 
   const createActivity = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) return
+    if (!status.pipedrive) return
 
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       const activityData = {
         type: newActivity.type,
         subject: newActivity.subject,
@@ -126,11 +128,10 @@ export function ActivityFeed() {
   }
 
   const markActivityDone = async (activityId: number, done: boolean) => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) return
+    if (!status.pipedrive) return
 
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       await pipedrive.updateActivity(activityId, { done })
       
       setActivities(prev => prev.map(activity => 
@@ -352,8 +353,8 @@ export function ActivityFeed() {
                 </Select>
               </div>
               
-              <Button onClick={createActivity} className="w-full" disabled={!newActivity.subject}>
-                Create Activity
+              <Button onClick={createActivity} className="w-full" disabled={!newActivity.subject || !status.pipedrive}>
+                {!status.pipedrive ? 'Pipedrive Not Connected' : 'Create Activity'}
               </Button>
             </div>
           </DialogContent>
@@ -415,6 +416,19 @@ export function ActivityFeed() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
                 <p className="text-sm text-gray-500 mt-2">Loading activities...</p>
               </div>
+            ) : !status.pipedrive ? (
+              <div className="text-center py-8">
+                <AlertCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-sm text-gray-500">Connect Pipedrive to view activities</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-2"
+                  onClick={() => window.location.href = '/dashboard/integrations'}
+                >
+                  Configure Integrations
+                </Button>
+              </div>
             ) : upcomingActivities.length === 0 ? (
               <div className="text-center py-8">
                 <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
@@ -446,6 +460,19 @@ export function ActivityFeed() {
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto"></div>
                 <p className="text-sm text-gray-500 mt-2">Loading activities...</p>
+              </div>
+            ) : !status.pipedrive ? (
+              <div className="text-center py-8">
+                <AlertCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-sm text-gray-500">Connect Pipedrive to view activities</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-2"
+                  onClick={() => window.location.href = '/dashboard/integrations'}
+                >
+                  Configure Integrations
+                </Button>
               </div>
             ) : recentActivities.length === 0 ? (
               <div className="text-center py-8">

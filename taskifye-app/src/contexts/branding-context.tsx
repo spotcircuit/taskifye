@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { BrandingConfig, defaultBranding } from '@/types/branding'
-import { ClientService } from '@/lib/db/client-service'
 
 interface BrandingContextType {
   branding: BrandingConfig
@@ -21,38 +20,47 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadBranding = async () => {
       try {
-        // Initialize demo client first
-        await ClientService.initializeDemoClient()
+        // Get current client ID
+        const clientId = localStorage.getItem('current_client_id') || 'client-1'
         
-        // Load client data from database
-        const client = await ClientService.getCurrentClient()
+        // Fetch branding from API
+        const response = await fetch('/api/settings/branding', {
+          headers: {
+            'x-client-id': clientId
+          }
+        })
         
-        const clientBranding: BrandingConfig = {
-          companyName: client.branding?.companyName || client.companyName,
-          slogan: client.branding?.tagline || undefined,
-          logoUrl: client.branding?.logoUrl || undefined,
-          primaryColor: client.branding?.primaryColor || defaultBranding.primaryColor,
-          secondaryColor: client.branding?.secondaryColor || defaultBranding.secondaryColor,
-          supportEmail: client.branding?.supportEmail || client.email || defaultBranding.supportEmail,
-          supportPhone: client.branding?.supportPhone || client.phone || defaultBranding.supportPhone,
-          website: client.website || defaultBranding.website,
+        if (response.ok) {
+          const data = await response.json()
+          
+          const clientBranding: BrandingConfig = {
+            companyName: data.companyName || defaultBranding.companyName,
+            slogan: data.tagline || undefined,
+            logoUrl: data.logoUrl || undefined,
+            primaryColor: data.primaryColor || defaultBranding.primaryColor,
+            secondaryColor: data.secondaryColor || defaultBranding.secondaryColor,
+            supportEmail: data.supportEmail || defaultBranding.supportEmail,
+            supportPhone: data.supportPhone || defaultBranding.supportPhone,
+            website: data.website || defaultBranding.website,
+            emailSignature: data.emailSignature || undefined
+          }
+          
+          setBranding(clientBranding)
+          
+          // Apply CSS variables
+          if (clientBranding.primaryColor) {
+            document.documentElement.style.setProperty('--primary-color', clientBranding.primaryColor)
+          }
+          if (clientBranding.secondaryColor) {
+            document.documentElement.style.setProperty('--secondary-color', clientBranding.secondaryColor)
+          }
+          
+          // Update document title
+          document.title = `${clientBranding.companyName} - Field Service Platform`
         }
-        
-        setBranding(clientBranding)
-        
-        // Apply CSS variables
-        if (clientBranding.primaryColor) {
-          document.documentElement.style.setProperty('--primary-color', clientBranding.primaryColor)
-        }
-        if (clientBranding.secondaryColor) {
-          document.documentElement.style.setProperty('--secondary-color', clientBranding.secondaryColor)
-        }
-        
-        // Update document title
-        document.title = `${clientBranding.companyName} - Field Service Platform`
         
       } catch (error) {
-        console.error('Failed to load branding from database:', error)
+        console.error('Failed to load branding from API:', error)
         // Fallback to localStorage
         const stored = localStorage.getItem('company_branding')
         if (stored) {
@@ -73,8 +81,30 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
     setBranding(updated)
     
     try {
-      // Save to database
-      await ClientService.updateBranding(config)
+      // Get current client ID
+      const clientId = localStorage.getItem('current_client_id') || 'client-1'
+      
+      // Save to API
+      const response = await fetch('/api/settings/branding', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-client-id': clientId
+        },
+        body: JSON.stringify({
+          companyName: updated.companyName,
+          tagline: updated.slogan,
+          logoUrl: updated.logoUrl,
+          primaryColor: updated.primaryColor,
+          secondaryColor: updated.secondaryColor,
+          supportEmail: updated.supportEmail,
+          supportPhone: updated.supportPhone,
+          website: updated.website,
+          emailSignature: updated.emailSignature
+        })
+      })
+      
+      if (!response.ok) throw new Error('Failed to save branding')
       
       // Also save to localStorage as backup
       localStorage.setItem('company_branding', JSON.stringify(updated))
@@ -102,7 +132,6 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
   // Reset to default branding
   const resetBranding = async () => {
     try {
-      await ClientService.updateBranding(defaultBranding)
       setBranding(defaultBranding)
       localStorage.removeItem('company_branding')
       document.documentElement.style.removeProperty('--primary-color')

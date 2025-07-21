@@ -24,7 +24,19 @@
       "Bash(npm:*)",
       "Bash(git commit:*)",
       "Bash(npx tsc:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npx prisma:*)",
+      "Bash(DATABASE_URL=\"file:./dev.db\" npx prisma db push)",
+      "Bash(DATABASE_URL=\"file:./dev.db\" npx prisma db seed)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(DATABASE_URL=\"file:./dev.db\" npm run seed)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "Bash(source ~/.bashrc)",
+      "Bash(turso:*)",
+      "Bash(export:*)",
+      "Bash(chmod:*)"
     ],
     "deny": []
   }

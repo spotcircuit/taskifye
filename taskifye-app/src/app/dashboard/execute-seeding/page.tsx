@@ -9,7 +9,8 @@ import {
   Database, Loader2, CheckCircle, AlertCircle, Play,
   Building, Users, Briefcase, Calendar
 } from 'lucide-react'
-import { pipedriveStorage, PipedriveService } from '@/lib/integrations/pipedrive'
+import { PipedriveService } from '@/lib/integrations/pipedrive'
+import { useIntegrations } from '@/contexts/integrations-context'
 
 interface SeedingProgress {
   step: string
@@ -20,6 +21,7 @@ interface SeedingProgress {
 }
 
 export default function ExecuteSeedingPage() {
+  const { status, isLoading: integrationsLoading } = useIntegrations()
   const [isSeeding, setIsSeeding] = useState(false)
   const [progress, setProgress] = useState<SeedingProgress>({
     step: 'Ready',
@@ -88,8 +90,7 @@ export default function ExecuteSeedingPage() {
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
   const executeSeedingNow = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) {
+    if (!status.pipedrive) {
       setError('Please connect to Pipedrive first from the Integrations page')
       return
     }
@@ -99,7 +100,7 @@ export default function ExecuteSeedingPage() {
     setResults(null)
 
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       
       // Test API connection first
       console.log('🔍 Testing API connection...')

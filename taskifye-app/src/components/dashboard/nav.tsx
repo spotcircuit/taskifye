@@ -50,6 +50,8 @@ const devNavItems = [
   { href: '/dashboard/test-data', label: 'Test Data & CRM', icon: TestTube },
   { href: '/dashboard/test-pipedrive', label: 'Test API', icon: TestTube },
   { href: '/dashboard/test-pipedrive-enhanced', label: 'Test Enhanced', icon: TestTube },
+  { href: '/dashboard/test-email', label: 'Test Email', icon: Mail },
+  { href: '/dashboard/test-integrations', label: 'Test Integrations', icon: Zap },
   { href: '/dashboard/receptionist-demo', label: 'Receptionist Demo', icon: Bot },
 ]
 

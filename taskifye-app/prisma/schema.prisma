@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -56,6 +56,8 @@ model Client {
   jobs          Job[]
   payments      Payment[]
   smsMessages   SmsMessage[]
+  quotes        Quote[]
+  invoices      Invoice[]
   
   @@index([agencyId])
 }
@@ -96,27 +98,27 @@ model ApiSettings {
   client                Client   @relation(fields: [clientId], references: [id])
   
   // Pipedrive
-  pipedriveApiKey       String?  @db.Text // Encrypted
+  pipedriveApiKey       String? // Encrypted
   pipedriveCompanyDomain String?
   
   // Twilio
   twilioAccountSid      String?
-  twilioAuthToken       String?  @db.Text // Encrypted
+  twilioAuthToken       String? // Encrypted
   twilioPhoneNumber     String?
   
   // ReachInbox
-  reachInboxApiKey      String?  @db.Text // Encrypted
+  reachInboxApiKey      String? // Encrypted
   reachInboxWorkspaceId String?
   
   // QuickBooks
   quickbooksClientId    String?
-  quickbooksClientSecret String? @db.Text // Encrypted
+  quickbooksClientSecret String? // Encrypted
   quickbooksRealmId     String?
-  quickbooksRefreshToken String? @db.Text // Encrypted
+  quickbooksRefreshToken String? // Encrypted
   
   // Other integrations
-  googleMapsApiKey      String?  @db.Text // Encrypted
-  openAiApiKey          String?  @db.Text // Encrypted
+  googleMapsApiKey      String? // Encrypted
+  openAiApiKey          String? // Encrypted
   
   updatedAt             DateTime @updatedAt
 }
@@ -195,8 +197,8 @@ model Job {
   signatureUrl        String?
   
   // Financials
-  quotedAmount        Decimal?  @db.Decimal(10, 2)
-  finalAmount         Decimal?  @db.Decimal(10, 2)
+  quotedAmount        Decimal?
+  finalAmount         Decimal?
   paymentStatus       PaymentStatus @default(PENDING)
   
   // Metadata
@@ -208,6 +210,8 @@ model Job {
   payments            Payment[]
   activities          JobActivity[]
   smsMessages         SmsMessage[]
+  quotes              Quote[]
+  invoices            Invoice[]
   
   @@index([clientId, status])
   @@index([clientId, scheduledDate])
@@ -235,7 +239,7 @@ model Payment {
   clientId        String
   client          Client   @relation(fields: [clientId], references: [id])
   
-  amount          Decimal  @db.Decimal(10, 2)
+  amount          Decimal
   method          PaymentMethod
   referenceNumber String?  // Check number, transaction ID, etc.
   receivedDate    DateTime
@@ -317,4 +321,116 @@ enum PaymentMethod {
   CARD
   ACH
   OTHER
+}
+
+// Quote model for estimates/quotes
+model Quote {
+  id              String   @id @default(uuid())
+  clientId        String
+  client          Client   @relation(fields: [clientId], references: [id])
+  jobId           String?  // Optional link to job
+  job             Job?     @relation(fields: [jobId], references: [id])
+  
+  // Quote details
+  quoteNumber     String   @unique
+  title           String
+  description     String?
+  
+  // Customer info
+  customerName    String
+  customerEmail   String?
+  customerPhone   String?
+  customerAddress String?
+  
+  // Line items (stored as JSON for flexibility)
+  lineItems       Json     // Array of {description, quantity, rate, amount}
+  
+  // Totals
+  subtotal        Decimal
+  taxRate         Decimal  @default(0)
+  taxAmount       Decimal  @default(0)
+  discount        Decimal  @default(0)
+  total           Decimal
+  
+  // Status and dates
+  status          QuoteStatus @default(DRAFT)
+  validUntil      DateTime?
+  sentAt          DateTime?
+  acceptedAt      DateTime?
+  
+  // Metadata
+  notes           String?
+  terms           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  invoice         Invoice? // One-to-one when converted
+  
+  @@index([clientId, status])
+  @@index([quoteNumber])
+}
+
+// Invoice model for billing
+model Invoice {
+  id              String   @id @default(uuid())
+  clientId        String
+  client          Client   @relation(fields: [clientId], references: [id])
+  jobId           String?  // Optional link to job
+  job             Job?     @relation(fields: [jobId], references: [id])
+  quoteId         String?  @unique // Optional link to quote
+  quote           Quote?   @relation(fields: [quoteId], references: [id])
+  
+  // Invoice details
+  invoiceNumber   String   @unique
+  title           String
+  description     String?
+  
+  // Customer info
+  customerName    String
+  customerEmail   String?
+  customerPhone   String?
+  customerAddress String?
+  
+  // Line items (stored as JSON for flexibility)
+  lineItems       Json     // Array of {description, quantity, rate, amount}
+  
+  // Totals
+  subtotal        Decimal
+  taxRate         Decimal  @default(0)
+  taxAmount       Decimal  @default(0)
+  discount        Decimal  @default(0)
+  total           Decimal
+  
+  // Payment info
+  status          InvoiceStatus @default(DRAFT)
+  dueDate         DateTime?
+  sentAt          DateTime?
+  paidAt          DateTime?
+  amountPaid      Decimal  @default(0)
+  
+  // Metadata
+  notes           String?
+  terms           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([clientId, status])
+  @@index([invoiceNumber])
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
 }

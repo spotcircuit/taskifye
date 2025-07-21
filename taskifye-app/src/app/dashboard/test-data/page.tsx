@@ -10,9 +10,10 @@ import {
   Building, Users, Briefcase, Calendar, Phone,
   DollarSign, Clock, FileText, Loader2
 } from 'lucide-react'
-import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { PipedriveService } from '@/lib/integrations/pipedrive'
 import { seedPipedriveData } from '@/lib/data/pipedrive-seeder'
 import { format } from 'date-fns'
+import { useIntegrations } from '@/contexts/integrations-context'
 
 interface DataSummary {
   organizations: any[]
@@ -22,6 +23,7 @@ interface DataSummary {
 }
 
 export default function TestDataPage() {
+  const { status, isLoading: integrationsLoading } = useIntegrations()
   const [data, setData] = useState<DataSummary>({
     organizations: [],
     persons: [],
@@ -33,16 +35,17 @@ export default function TestDataPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   useEffect(() => {
-    fetchAllData()
-  }, [])
+    if (!integrationsLoading && status.pipedrive) {
+      fetchAllData()
+    }
+  }, [integrationsLoading, status.pipedrive])
 
   const fetchAllData = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) return
+    if (!status.pipedrive) return
 
     setLoading(true)
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       
       const [orgsResponse, personsResponse, dealsResponse, activitiesResponse] = await Promise.all([
         pipedrive.getOrganizations(),
@@ -67,15 +70,14 @@ export default function TestDataPage() {
   }
 
   const runSeeder = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) {
+    if (!status.pipedrive) {
       alert('Please connect to Pipedrive first')
       return
     }
 
     setSeeding(true)
     try {
-      await seedPipedriveData(apiKey, {
+      await seedPipedriveData({
         organizations: 15,
         persons: 30,
         deals: 75,

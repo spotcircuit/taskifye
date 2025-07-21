@@ -2,9 +2,9 @@
 const fs = require('fs');
 
 // Try to read the API key from various sources
-let API_KEY = '';
+let API_KEY = '2911f330137024c4d04b3e0256f67d7a83102f1a'; // Default for Premium Painting Co
 
-// Check if there's a .env file
+// Check if there's a .env file to override
 try {
   const envContent = fs.readFileSync('.env.local', 'utf8');
   const pipedriveMatch = envContent.match(/PIPEDRIVE_API_KEY=(.+)/);
@@ -12,7 +12,7 @@ try {
     API_KEY = pipedriveMatch[1].replace(/["']/g, '');
   }
 } catch (e) {
-  // No .env file or error reading it
+  // No .env file or error reading it, use default
 }
 
 // If no API key found in env, prompt user

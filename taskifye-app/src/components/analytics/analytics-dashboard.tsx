@@ -8,9 +8,10 @@ import {
   TrendingUp, TrendingDown, Calendar, Download, 
   DollarSign, Users, Briefcase, Clock,
   BarChart3, LineChart, PieChart, FileText,
-  Loader2, Target, Activity
+  Loader2, Target, Activity, AlertCircle
 } from 'lucide-react'
-import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { PipedriveService } from '@/lib/integrations/pipedrive'
+import { useIntegrations } from '@/contexts/integrations-context'
 import { format, startOfMonth, endOfMonth, subMonths, startOfWeek, endOfWeek, subWeeks } from 'date-fns'
 import {
   ResponsiveContainer,
@@ -39,18 +40,23 @@ interface AnalyticsData {
 const COLORS = ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899']
 
 export function AnalyticsDashboard() {
+  const { status, isLoading: integrationsLoading } = useIntegrations()
   const [data, setData] = useState<AnalyticsData>({ deals: [], contacts: [], activities: [] })
   const [loading, setLoading] = useState(true)
   const [selectedPeriod, setSelectedPeriod] = useState('this_month')
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchAnalyticsData()
-  }, [selectedPeriod])
+    if (!integrationsLoading && status.pipedrive) {
+      fetchAnalyticsData()
+    } else if (!integrationsLoading && !status.pipedrive) {
+      setError('Please connect Pipedrive in the Integrations page')
+      setLoading(false)
+    }
+  }, [selectedPeriod, integrationsLoading, status.pipedrive])
 
   const fetchAnalyticsData = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) {
+    if (!status.pipedrive) {
       setError('Please connect Pipedrive in the Integrations page')
       setLoading(false)
       return
@@ -60,7 +66,7 @@ export function AnalyticsDashboard() {
     setError(null)
     
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       
       // Fetch all data in parallel
       const [dealsResponse, personsResponse, activitiesResponse] = await Promise.all([
@@ -233,10 +239,18 @@ export function AnalyticsDashboard() {
     )
   }
 
-  if (error) {
+  if (error || !status.pipedrive) {
     return (
-      <div className="text-center p-8">
-        <p className="text-red-600">{error}</p>
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+        <p className="text-lg font-medium">Pipedrive Not Connected</p>
+        <p className="text-muted-foreground">Connect Pipedrive to view analytics</p>
+        <Button 
+          className="mt-4"
+          onClick={() => window.location.href = '/dashboard/integrations'}
+        >
+          Configure Integrations
+        </Button>
       </div>
     )
   }

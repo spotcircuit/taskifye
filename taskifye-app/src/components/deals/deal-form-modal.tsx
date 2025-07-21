@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { X, Loader2 } from 'lucide-react'
-import { pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { useIntegrations } from '@/contexts/integrations-context'
 
 interface DealTemplate {
   id: string
@@ -22,6 +22,7 @@ interface DealFormModalProps {
 }
 
 export function DealFormModal({ template, onClose, onSuccess }: DealFormModalProps) {
+  const { status } = useIntegrations()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     title: template.name,
@@ -38,8 +39,7 @@ export function DealFormModal({ template, onClose, onSuccess }: DealFormModalPro
     setLoading(true)
 
     try {
-      const apiKey = pipedriveStorage.getApiKey()
-      if (!apiKey) {
+      if (!status.pipedrive) {
         alert('Please connect Pipedrive first')
         return
       }
@@ -49,10 +49,12 @@ export function DealFormModal({ template, onClose, onSuccess }: DealFormModalPro
       if (formData.contactName || formData.contactEmail) {
         const personResponse = await fetch('/api/integrations/pipedrive', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-client-id': localStorage.getItem('current_client_id') || 'client-1'
+          },
           body: JSON.stringify({
             action: 'createPerson',
-            apiKey,
             name: formData.contactName,
             email: formData.contactEmail ? [formData.contactEmail] : undefined,
             phone: formData.contactPhone ? [formData.contactPhone] : undefined
@@ -68,10 +70,12 @@ export function DealFormModal({ template, onClose, onSuccess }: DealFormModalPro
       // Create the deal
       const dealResponse = await fetch('/api/integrations/pipedrive', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-client-id': localStorage.getItem('current_client_id') || 'client-1'
+        },
         body: JSON.stringify({
           action: 'createDeal',
-          apiKey,
           title: formData.title,
           value: formData.value,
           person_id: personId,

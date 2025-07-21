@@ -7,6 +7,7 @@ import { MobileNav } from '@/components/layout/mobile-nav'
 import { useState } from 'react'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import Link from 'next/link'
+import { ClientSwitcher } from '@/components/layout/client-switcher'
 
 export default function DashboardHeader() {
   const [searchOpen, setSearchOpen] = useState(false)
@@ -34,6 +35,11 @@ export default function DashboardHeader() {
         <Link href="/dashboard">
           <h1 className="text-lg font-semibold cursor-pointer hover:opacity-80 transition-opacity">Taskifye</h1>
         </Link>
+      </div>
+
+      {/* Client Switcher - Desktop */}
+      <div className="hidden lg:flex">
+        <ClientSwitcher />
       </div>
 
       {/* Actions */}

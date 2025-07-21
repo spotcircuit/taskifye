@@ -1,0 +1,380 @@
+// Production schema - uses PostgreSQL instead of SQLite
+// Copy this to schema.prisma when deploying to production
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Agency - Top level account that owns multiple clients
+model Agency {
+  id            String   @id @default(uuid())
+  name          String
+  slug          String   @unique
+  email         String
+  phone         String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  clients       Client[]
+  users         User[]
+}
+
+// Client - Individual businesses (formerly Tenant)
+model Client {
+  id            String   @id @default(uuid())
+  agencyId      String
+  name          String
+  slug          String   @unique
+  businessType  String?  // 'hvac', 'plumbing', 'electrical', 'painting', etc.
+  email         String?
+  phone         String?
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?
+  country       String   @default("US")
+  timezone      String   @default("America/New_York")
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  agency        Agency      @relation(fields: [agencyId], references: [id])
+  users         ClientUser[]
+  branding      Branding?
+  apiSettings   ApiSettings?
+  contacts      Contact[]
+  jobs          Job[]
+  invoices      Invoice[]
+  quotes        Quote[]
+  products      Product[]
+  activities    Activity[]
+  documents     Document[]
+}
+
+// User - System users who can access the platform
+model User {
+  id            String       @id @default(uuid())
+  agencyId      String
+  email         String       @unique
+  password      String
+  firstName     String
+  lastName      String
+  phone         String?
+  role          String       @default("user") // 'admin', 'manager', 'user'
+  isActive      Boolean      @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  
+  // Relations
+  agency        Agency       @relation(fields: [agencyId], references: [id])
+  clients       ClientUser[]
+}
+
+// ClientUser - Many-to-many relationship between clients and users
+model ClientUser {
+  id            String   @id @default(uuid())
+  clientId      String
+  userId        String
+  role          String   @default("user") // 'owner', 'admin', 'user'
+  permissions   Json?    // Flexible permissions object
+  createdAt     DateTime @default(now())
+  
+  // Relations
+  client        Client   @relation(fields: [clientId], references: [id])
+  user          User     @relation(fields: [userId], references: [id])
+  
+  @@unique([clientId, userId])
+}
+
+// Branding - Per-client UI customization
+model Branding {
+  id            String   @id @default(uuid())
+  clientId      String   @unique
+  primaryColor  String   @default("#3B82F6")
+  accentColor   String   @default("#10B981")
+  logoUrl       String?
+  faviconUrl    String?
+  companyName   String?
+  tagline       String?
+  supportEmail  String?
+  supportPhone  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  client        Client   @relation(fields: [clientId], references: [id])
+}
+
+// ApiSettings - Encrypted credential storage per client
+model ApiSettings {
+  id                      String   @id @default(uuid())
+  clientId                String   @unique
+  
+  // Pipedrive
+  pipedriveApiKey         String?
+  pipedriveCompanyDomain  String?
+  
+  // Twilio
+  twilioAccountSid        String?
+  twilioAuthToken         String?
+  twilioPhoneNumber       String?
+  
+  // ReachInbox
+  reachInboxApiKey        String?
+  reachInboxWorkspaceId   String?
+  
+  // QuickBooks
+  quickbooksClientId      String?
+  quickbooksClientSecret  String?
+  quickbooksRealmId       String?
+  quickbooksAccessToken   String?
+  quickbooksRefreshToken  String?
+  quickbooksTokenExpiry   DateTime?
+  
+  // OpenAI
+  openAiApiKey            String?
+  
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  
+  // Relations
+  client                  Client   @relation(fields: [clientId], references: [id])
+}
+
+// Contact - CRM contacts
+model Contact {
+  id            String   @id @default(uuid())
+  clientId      String
+  firstName     String
+  lastName      String
+  email         String?
+  phone         String?
+  company       String?
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?
+  tags          String[] // Array of tags
+  source        String?  // 'website', 'referral', 'cold-call', etc.
+  status        String   @default("lead") // 'lead', 'customer', 'inactive'
+  notes         String?
+  pipedriveId   String?  // External ID from Pipedrive
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  client        Client   @relation(fields: [clientId], references: [id])
+  jobs          Job[]
+  invoices      Invoice[]
+  quotes        Quote[]
+  activities    Activity[]
+}
+
+// Job - Service jobs/work orders
+model Job {
+  id              String   @id @default(uuid())
+  clientId        String
+  contactId       String?
+  jobNumber       String
+  title           String
+  description     String?
+  status          String   @default("scheduled") // 'scheduled', 'in-progress', 'completed', 'cancelled'
+  priority        String   @default("normal") // 'low', 'normal', 'high', 'urgent'
+  scheduledDate   DateTime?
+  completedDate   DateTime?
+  assignedTo      String?  // User ID or technician name
+  address         String?
+  city            String?
+  state           String?
+  zipCode         String?
+  estimatedHours  Decimal?
+  actualHours     Decimal?
+  notes           String?
+  pipedriveId     String?  // External ID from Pipedrive
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  client          Client   @relation(fields: [clientId], references: [id])
+  contact         Contact? @relation(fields: [contactId], references: [id])
+  lineItems       JobLineItem[]
+  activities      Activity[]
+}
+
+// JobLineItem - Line items for jobs
+model JobLineItem {
+  id          String   @id @default(uuid())
+  jobId       String
+  productId   String?
+  description String
+  quantity    Decimal
+  rate        Decimal
+  total       Decimal
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  job         Job      @relation(fields: [jobId], references: [id])
+  product     Product? @relation(fields: [productId], references: [id])
+}
+
+// Product - Service catalog
+model Product {
+  id          String   @id @default(uuid())
+  clientId    String
+  sku         String?
+  name        String
+  description String?
+  category    String?
+  unitPrice   Decimal
+  unit        String   @default("each") // 'each', 'hour', 'sqft', etc.
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  client      Client   @relation(fields: [clientId], references: [id])
+  lineItems   JobLineItem[]
+  quoteItems  QuoteLineItem[]
+}
+
+// Invoice - Customer invoices
+model Invoice {
+  id            String   @id @default(uuid())
+  clientId      String
+  contactId     String
+  invoiceNumber String
+  jobId         String?
+  status        String   @default("draft") // 'draft', 'sent', 'paid', 'overdue', 'cancelled'
+  issueDate     DateTime @default(now())
+  dueDate       DateTime
+  subtotal      Decimal
+  tax           Decimal  @default(0)
+  total         Decimal
+  amountPaid    Decimal  @default(0)
+  notes         String?
+  terms         String?
+  paidAt        DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  client        Client   @relation(fields: [clientId], references: [id])
+  contact       Contact  @relation(fields: [contactId], references: [id])
+  lineItems     InvoiceLineItem[]
+  payments      Payment[]
+}
+
+// InvoiceLineItem - Line items for invoices
+model InvoiceLineItem {
+  id          String   @id @default(uuid())
+  invoiceId   String
+  description String
+  quantity    Decimal
+  rate        Decimal
+  total       Decimal
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+}
+
+// Payment - Payment records
+model Payment {
+  id            String   @id @default(uuid())
+  invoiceId     String
+  amount        Decimal
+  paymentDate   DateTime @default(now())
+  paymentMethod String   // 'cash', 'check', 'credit-card', 'ach', etc.
+  reference     String?  // Check number, transaction ID, etc.
+  notes         String?
+  createdAt     DateTime @default(now())
+  
+  // Relations
+  invoice       Invoice  @relation(fields: [invoiceId], references: [id])
+}
+
+// Quote - Customer quotes/estimates
+model Quote {
+  id            String   @id @default(uuid())
+  clientId      String
+  contactId     String
+  quoteNumber   String
+  status        String   @default("draft") // 'draft', 'sent', 'accepted', 'rejected', 'expired'
+  validUntil    DateTime
+  subtotal      Decimal
+  tax           Decimal  @default(0)
+  total         Decimal
+  notes         String?
+  terms         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  client        Client   @relation(fields: [clientId], references: [id])
+  contact       Contact  @relation(fields: [contactId], references: [id])
+  lineItems     QuoteLineItem[]
+}
+
+// QuoteLineItem - Line items for quotes
+model QuoteLineItem {
+  id          String   @id @default(uuid())
+  quoteId     String
+  productId   String?
+  description String
+  quantity    Decimal
+  rate        Decimal
+  total       Decimal
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  quote       Quote    @relation(fields: [quoteId], references: [id])
+  product     Product? @relation(fields: [productId], references: [id])
+}
+
+// Activity - CRM activities/interactions
+model Activity {
+  id          String   @id @default(uuid())
+  clientId    String
+  contactId   String?
+  jobId       String?
+  type        String   // 'call', 'email', 'meeting', 'note', 'task'
+  subject     String
+  description String?
+  status      String   @default("pending") // 'pending', 'completed', 'cancelled'
+  dueDate     DateTime?
+  completedAt DateTime?
+  assignedTo  String?  // User ID
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  client      Client   @relation(fields: [clientId], references: [id])
+  contact     Contact? @relation(fields: [contactId], references: [id])
+  job         Job?     @relation(fields: [jobId], references: [id])
+}
+
+// Document - File attachments
+model Document {
+  id          String   @id @default(uuid())
+  clientId    String
+  entityType  String   // 'contact', 'job', 'invoice', 'quote'
+  entityId    String   // ID of the related entity
+  fileName    String
+  fileSize    Int
+  mimeType    String
+  url         String
+  uploadedBy  String?  // User ID
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  client      Client   @relation(fields: [clientId], references: [id])
+}

@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { SimplePipedriveClient } from '@/lib/pipedrive-simple'
+import { getCachedApiKey } from '@/lib/cache/api-key-cache'
 
 export async function POST(req: NextRequest) {
   try {
-    const { action, apiKey, ...params } = await req.json()
-
-    // Use provided API key or fall back to environment variable
-    const pipedriveApiKey = apiKey || process.env.PIPEDRIVE_API_KEY
-
+    const { action, ...params } = await req.json()
+    
+    // Get client ID from header
+    const clientId = req.headers.get('x-client-id') || 'client-1'
+    
+    // Get cached API key
+    const pipedriveApiKey = await getCachedApiKey(clientId, 'pipedrive')
+    
     if (!pipedriveApiKey) {
-      return NextResponse.json({ error: 'API key is required' }, { status: 400 })
+      return NextResponse.json({ error: 'Pipedrive not configured' }, { status: 400 })
     }
 
     const pipedrive = new SimplePipedriveClient(pipedriveApiKey)

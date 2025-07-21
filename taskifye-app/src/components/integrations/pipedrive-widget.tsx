@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { PipedriveService } from '@/lib/integrations/pipedrive'
 import { Users, TrendingUp, Activity, DollarSign, Loader2, AlertCircle } from 'lucide-react'
 
 interface PipedriveStats {
@@ -31,18 +31,31 @@ export function PipedriveWidget() {
   const [isConnected, setIsConnected] = useState(false)
 
   useEffect(() => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (apiKey) {
-      setIsConnected(true)
-      loadPipedriveData(apiKey)
-    } else {
-      setLoading(false)
-    }
+    checkPipedriveConnection()
   }, [])
 
-  const loadPipedriveData = async (apiKey: string) => {
+  const checkPipedriveConnection = async () => {
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      // Check if Pipedrive is configured by attempting to get stats
+      const pipedrive = new PipedriveService()
+      const testResult = await pipedrive.testConnection()
+      
+      if (testResult.success) {
+        setIsConnected(true)
+        loadPipedriveData()
+      } else {
+        setIsConnected(false)
+        setLoading(false)
+      }
+    } catch (err) {
+      setIsConnected(false)
+      setLoading(false)
+    }
+  }
+
+  const loadPipedriveData = async () => {
+    try {
+      const pipedrive = new PipedriveService()
       
       // Load stats and deals in parallel
       const [statsResult, dealsResult] = await Promise.all([

@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { CalendarIcon, Plus, Search, Loader2 } from 'lucide-react'
-import { pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { useIntegrations } from '@/contexts/integrations-context'
 
 interface AddJobDialogProps {
   trigger?: React.ReactNode
@@ -20,6 +20,7 @@ interface AddJobDialogProps {
 }
 
 export function AddJobDialog({ trigger, onJobCreated }: AddJobDialogProps) {
+  const { status } = useIntegrations()
   const [open, setOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [searchingCustomer, setSearchingCustomer] = useState(false)
@@ -45,13 +46,20 @@ export function AddJobDialog({ trigger, onJobCreated }: AddJobDialogProps) {
       return
     }
 
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) return
+    if (!status.pipedrive) return
 
     setSearchingCustomer(true)
     try {
-      const response = await fetch(`/api/pipedrive/persons?search=${encodeURIComponent(term)}`, {
-        headers: { 'x-pipedrive-api-key': apiKey }
+      const response = await fetch('/api/integrations/pipedrive', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-client-id': localStorage.getItem('current_client_id') || 'client-1'
+        },
+        body: JSON.stringify({
+          action: 'getPersons',
+          options: { term }
+        })
       })
       const data = await response.json()
       setSearchResults(data.data?.items || [])
@@ -68,27 +76,27 @@ export function AddJobDialog({ trigger, onJobCreated }: AddJobDialogProps) {
       return
     }
 
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) {
+    if (!status.pipedrive) {
       alert('Please connect Pipedrive first in the Integrations page')
       return
     }
 
     setIsSubmitting(true)
     try {
-      const response = await fetch('/api/pipedrive/deals', {
+      const response = await fetch('/api/integrations/pipedrive', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-pipedrive-api-key': apiKey
+          'x-client-id': localStorage.getItem('current_client_id') || 'client-1'
         },
         body: JSON.stringify({
-          ...jobData,
-          personId: selectedCustomer.item.id,
-          orgId: selectedCustomer.item.organization?.id,
-          scheduledDate: scheduledDate?.toISOString(),
-          // Map to a stage if you have pipeline stages configured
-          // stage_id: 1, 
+          action: 'createDeal',
+          title: jobData.title,
+          value: jobData.value,
+          person_id: selectedCustomer?.item?.id,
+          org_id: selectedCustomer?.item?.organization?.id,
+          expected_close_date: scheduledDate?.toISOString().split('T')[0],
+          // Additional job details can be stored in custom fields
         })
       })
 

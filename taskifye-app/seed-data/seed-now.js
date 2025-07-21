@@ -1,8 +1,8 @@
 // Simple data seeding script for immediate execution
 const https = require('https')
 
-// You'll need to replace this with your actual Pipedrive API key
-const API_KEY = 'YOUR_PIPEDRIVE_API_KEY'
+// Pipedrive API key for Premium Painting Co
+const API_KEY = '2911f330137024c4d04b3e0256f67d7a83102f1a'
 const BASE_URL = 'https://api.pipedrive.com/v1'
 
 // Helper function to make API requests

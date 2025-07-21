@@ -9,8 +9,8 @@ import {
   Building, Users, Briefcase, Calendar,
   RefreshCw, Eye
 } from 'lucide-react'
-import { pipedriveStorage } from '@/lib/integrations/pipedrive'
 import { SimplePipedriveClient } from '@/lib/pipedrive-simple'
+import { useIntegrations } from '@/contexts/integrations-context'
 
 interface DiagnosticData {
   connection: any
@@ -23,13 +23,13 @@ interface DiagnosticData {
 }
 
 export default function PipedriveDiagnosticsPage() {
+  const { status, isLoading: integrationsLoading } = useIntegrations()
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState<DiagnosticData | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const runDiagnostics = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) {
+    if (!status.pipedrive) {
       setError('Please connect to Pipedrive first from the Integrations page')
       return
     }
@@ -38,7 +38,17 @@ export default function PipedriveDiagnosticsPage() {
     setError(null)
 
     try {
-      const client = new SimplePipedriveClient(apiKey)
+      // Fetch API key from server for diagnostics
+      const response = await fetch('/api/settings/integrations', {
+        headers: {
+          'x-client-id': localStorage.getItem('current_client_id') || 'client-1'
+        }
+      })
+      const integrations = await response.json()
+      if (!integrations.credentials?.pipedrive_api_key) {
+        throw new Error('No Pipedrive API key found')
+      }
+      const client = new SimplePipedriveClient(integrations.credentials.pipedrive_api_key)
       
       console.log('🔍 Running Pipedrive diagnostics...')
       
@@ -91,11 +101,10 @@ export default function PipedriveDiagnosticsPage() {
   }
 
   useEffect(() => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (apiKey) {
+    if (!integrationsLoading && status.pipedrive) {
       runDiagnostics()
     }
-  }, [])
+  }, [integrationsLoading, status.pipedrive])
 
   const DataCard = ({ title, data, icon: Icon, color }: any) => (
     <Card>

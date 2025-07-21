@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const pipedrive = new PipedriveService(apiKey)
+    const pipedrive = new PipedriveService()
 
     // Handle bulk upload
     if (body.bulk && Array.isArray(body.persons)) {
@@ -154,7 +154,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const pipedrive = new PipedriveService(apiKey)
+    const pipedrive = new PipedriveService()
 
     if (search) {
       // Search for persons

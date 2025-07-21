@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { PipedriveService } from '@/lib/integrations/pipedrive'
 import { Building, Calendar, Users, FileText, DollarSign, Activity } from 'lucide-react'
 
 export default function TestPipedriveEnhancedPage() {
@@ -22,10 +22,10 @@ export default function TestPipedriveEnhancedPage() {
   }
 
   const testOrganizations = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
+    const apiKey = null // API key now comes from database
     if (!apiKey) throw new Error('No API key found')
 
-    const service = new PipedriveService(apiKey)
+    const service = new PipedriveService()
     
     // Get organizations
     const orgs = await service.getOrganizations({ limit: 5 })
@@ -40,10 +40,10 @@ export default function TestPipedriveEnhancedPage() {
   }
 
   const testActivities = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
+    const apiKey = null // API key now comes from database
     if (!apiKey) throw new Error('No API key found')
 
-    const service = new PipedriveService(apiKey)
+    const service = new PipedriveService()
     
     // Get activities
     const activities = await service.getActivities({ done: 0, limit: 5 })
@@ -65,10 +65,10 @@ export default function TestPipedriveEnhancedPage() {
   }
 
   const testDealUpdates = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
+    const apiKey = null // API key now comes from database
     if (!apiKey) throw new Error('No API key found')
 
-    const service = new PipedriveService(apiKey)
+    const service = new PipedriveService()
     
     // Get stages
     const stages = await service.getStages()
@@ -92,10 +92,10 @@ export default function TestPipedriveEnhancedPage() {
   }
 
   const testNotes = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
+    const apiKey = null // API key now comes from database
     if (!apiKey) throw new Error('No API key found')
 
-    const service = new PipedriveService(apiKey)
+    const service = new PipedriveService()
     
     // Get a deal to add note to
     const deals = await service.getDeals({ limit: 1 })
@@ -113,10 +113,10 @@ export default function TestPipedriveEnhancedPage() {
   }
 
   const testCustomFields = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
+    const apiKey = null // API key now comes from database
     if (!apiKey) throw new Error('No API key found')
 
-    const service = new PipedriveService(apiKey)
+    const service = new PipedriveService()
     
     const personFields = await service.getPersonFields()
     const orgFields = await service.getOrganizationFields()

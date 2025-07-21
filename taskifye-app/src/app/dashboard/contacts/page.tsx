@@ -10,10 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Upload, UserPlus, Download, Users, Loader2, Search, 
   Phone, Mail, Building, Calendar, DollarSign, TrendingUp,
-  Filter, MoreVertical, Edit, Trash2, Eye
+  Filter, MoreVertical, Edit, Trash2, Eye, AlertCircle
 } from 'lucide-react'
-import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { PipedriveService } from '@/lib/integrations/pipedrive'
 import { ContactDetailModal } from '@/components/contacts/contact-detail-modal'
+import { useIntegrations } from '@/contexts/integrations-context'
 
 interface Contact {
   id: number
@@ -34,6 +35,7 @@ interface Contact {
 }
 
 export default function ContactsPage() {
+  const { status, isLoading: integrationsLoading } = useIntegrations()
   const [contacts, setContacts] = useState<Contact[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -63,18 +65,21 @@ export default function ContactsPage() {
   const [showDetailModal, setShowDetailModal] = useState(false)
 
   useEffect(() => {
-    fetchContacts()
-  }, [])
+    if (!integrationsLoading && status.pipedrive) {
+      fetchContacts()
+    } else if (!integrationsLoading) {
+      setLoading(false)
+    }
+  }, [integrationsLoading, status.pipedrive])
 
   const fetchContacts = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) {
+    if (!status.pipedrive) {
       setLoading(false)
       return
     }
 
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       const response = await pipedrive.getPersons()
       
       if (response.success && response.persons) {
@@ -131,13 +136,12 @@ export default function ContactsPage() {
       }).filter(c => c.name || c.email) // Filter empty rows
 
       // Upload to Pipedrive
-      const apiKey = pipedriveStorage.getApiKey()
-      if (!apiKey) {
+      if (!status.pipedrive) {
         alert('Please connect Pipedrive first in the Integrations page')
         return
       }
 
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       let created = 0
       let failed = 0
 
@@ -187,15 +191,14 @@ export default function ContactsPage() {
       return
     }
 
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) {
+    if (!status.pipedrive) {
       alert('Please connect Pipedrive first in the Integrations page')
       return
     }
 
     setIsAddingContact(true)
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       
       // Create organization if company is provided
       let orgId = undefined
@@ -333,6 +336,20 @@ export default function ContactsPage() {
               <Loader2 className="h-8 w-8 animate-spin mx-auto" />
               <p className="text-muted-foreground mt-2">Loading contacts...</p>
             </div>
+          ) : !status.pipedrive ? (
+            <Card>
+              <CardContent className="text-center py-8">
+                <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-lg font-medium">Pipedrive Not Connected</p>
+                <p className="text-muted-foreground">Connect Pipedrive to manage contacts</p>
+                <Button 
+                  className="mt-4"
+                  onClick={() => window.location.href = '/dashboard/integrations'}
+                >
+                  Configure Integrations
+                </Button>
+              </CardContent>
+            </Card>
           ) : filteredContacts.length === 0 ? (
             <Card>
               <CardContent className="text-center py-8">
@@ -650,10 +667,10 @@ export default function ContactsPage() {
               
               <Button 
                 onClick={handleUpload} 
-                disabled={!selectedFile || uploading}
+                disabled={!selectedFile || uploading || !status.pipedrive}
                 className="w-full"
               >
-                {uploading ? 'Uploading...' : 'Upload Contacts'}
+                {!status.pipedrive ? 'Pipedrive Not Connected' : uploading ? 'Uploading...' : 'Upload Contacts'}
               </Button>
 
               <Button 
@@ -741,9 +758,9 @@ export default function ContactsPage() {
               <Button 
                 className="w-full" 
                 onClick={handleAddContact}
-                disabled={isAddingContact || !newContact.name}
+                disabled={isAddingContact || !newContact.name || !status.pipedrive}
               >
-                {isAddingContact ? (
+                {!status.pipedrive ? 'Pipedrive Not Connected' : isAddingContact ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Adding...

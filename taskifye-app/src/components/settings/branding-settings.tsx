@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -8,37 +8,118 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { useBranding } from '@/contexts/branding-context'
 import { businessTemplates } from '@/config/business-templates'
-import { Upload, Palette, RotateCcw, Save, AlertCircle, Image } from 'lucide-react'
+import { Upload, Palette, RotateCcw, Save, AlertCircle, Image, Loader2 } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 
 export function BrandingSettings() {
-  const { branding, updateBranding, resetBranding } = useBranding()
+  const { toast } = useToast()
   const [isSaving, setIsSaving] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [businessType, setBusinessType] = useState('hvac')
-  const [previewLogo, setPreviewLogo] = useState<string | null>(branding.logoUrl || null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  // Local state for form data
+  const [formData, setFormData] = useState({
+    companyName: '',
+    slogan: '',
+    logoUrl: '',
+    primaryColor: '#3b82f6',
+    secondaryColor: '#10b981',
+    supportEmail: '',
+    supportPhone: '',
+    website: '',
+    emailSignature: ''
+  })
 
+  // Load branding data on mount
+  useEffect(() => {
+    loadBrandingData()
+  }, [])
+  
+  const loadBrandingData = async () => {
+    setIsLoading(true)
+    try {
+      const clientId = localStorage.getItem('current_client_id') || 'client-1'
+      const response = await fetch('/api/settings/branding', {
+        headers: {
+          'x-client-id': clientId
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setFormData({
+          companyName: data.companyName || '',
+          slogan: data.tagline || '',
+          logoUrl: data.logoUrl || '',
+          primaryColor: data.primaryColor || '#3b82f6',
+          secondaryColor: data.secondaryColor || '#10b981',
+          supportEmail: data.supportEmail || '',
+          supportPhone: data.supportPhone || '',
+          website: data.website || '',
+          emailSignature: data.emailSignature || ''
+        })
+        // Load business type from localStorage (not stored in branding table)
+        const savedType = localStorage.getItem('business_type')
+        if (savedType) setBusinessType(savedType)
+      }
+    } catch (error) {
+      console.error('Failed to load branding:', error)
+      toast({
+        title: 'Failed to load branding settings',
+        description: 'Using default values',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+  
   const handleSave = async () => {
     setIsSaving(true)
     
     try {
-      // In a real app, you'd upload the logo to storage here
-      // For now, we'll just save to database via context
-      
-      await updateBranding({
-        logoUrl: previewLogo || undefined
+      const clientId = localStorage.getItem('current_client_id') || 'client-1'
+      const response = await fetch('/api/settings/branding', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-client-id': clientId
+        },
+        body: JSON.stringify({
+          companyName: formData.companyName,
+          tagline: formData.slogan,
+          logoUrl: formData.logoUrl,
+          primaryColor: formData.primaryColor,
+          secondaryColor: formData.secondaryColor,
+          supportEmail: formData.supportEmail,
+          supportPhone: formData.supportPhone,
+          website: formData.website,
+          emailSignature: formData.emailSignature
+        })
       })
+      
+      if (!response.ok) throw new Error('Failed to save')
       
       // Store business type separately
       localStorage.setItem('business_type', businessType)
       
-      setShowSuccess(true)
-      setTimeout(() => setShowSuccess(false), 3000)
+      // Apply CSS variables immediately
+      document.documentElement.style.setProperty('--primary-color', formData.primaryColor)
+      document.documentElement.style.setProperty('--secondary-color', formData.secondaryColor)
+      
+      toast({
+        title: 'Branding settings saved',
+        description: 'Your changes have been saved successfully'
+      })
     } catch (error) {
       console.error('Failed to save branding:', error)
-      alert('Failed to save branding settings. Please try again.')
+      toast({
+        title: 'Failed to save settings',
+        description: 'Please try again',
+        variant: 'destructive'
+      })
     } finally {
       setIsSaving(false)
     }
@@ -62,7 +143,7 @@ export function BrandingSettings() {
       // Create preview
       const reader = new FileReader()
       reader.onloadend = () => {
-        setPreviewLogo(reader.result as string)
+        setFormData(prev => ({ ...prev, logoUrl: reader.result as string }))
       }
       reader.readAsDataURL(file)
     }
@@ -70,28 +151,36 @@ export function BrandingSettings() {
 
   const handleReset = async () => {
     if (confirm('Are you sure you want to reset all branding to defaults?')) {
-      try {
-        await resetBranding()
-        setPreviewLogo(null)
-        setBusinessType('hvac')
-        localStorage.removeItem('business_type')
-      } catch (error) {
-        console.error('Failed to reset branding:', error)
-        alert('Failed to reset branding. Please try again.')
-      }
+      setFormData({
+        companyName: '',
+        slogan: '',
+        logoUrl: '',
+        primaryColor: '#3b82f6',
+        secondaryColor: '#10b981',
+        supportEmail: '',
+        supportPhone: '',
+        website: '',
+        emailSignature: ''
+      })
+      setBusinessType('hvac')
+      localStorage.removeItem('business_type')
+      toast({
+        title: 'Reset to defaults',
+        description: 'Branding has been reset. Remember to save your changes.'
+      })
     }
+  }
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
-      {showSuccess && (
-        <Alert className="bg-green-50 border-green-200">
-          <AlertCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">
-            Branding settings saved successfully!
-          </AlertDescription>
-        </Alert>
-      )}
 
       {/* Company Identity */}
       <Card>
@@ -107,8 +196,8 @@ export function BrandingSettings() {
               <Label htmlFor="companyName">Company Name</Label>
               <Input
                 id="companyName"
-                value={branding.companyName}
-                onChange={(e) => updateBranding({ companyName: e.target.value })}
+                value={formData.companyName}
+                onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
                 placeholder="Your Company Name"
               />
             </div>
@@ -117,8 +206,8 @@ export function BrandingSettings() {
               <Label htmlFor="slogan">Slogan / Tagline</Label>
               <Input
                 id="slogan"
-                value={branding.slogan || ''}
-                onChange={(e) => updateBranding({ slogan: e.target.value })}
+                value={formData.slogan}
+                onChange={(e) => setFormData(prev => ({ ...prev, slogan: e.target.value }))}
                 placeholder="Your company slogan"
               />
             </div>
@@ -156,9 +245,9 @@ export function BrandingSettings() {
         <CardContent className="space-y-4">
           <div className="flex items-center gap-6">
             <div className="flex-shrink-0">
-              {previewLogo ? (
+              {formData.logoUrl ? (
                 <img
-                  src={previewLogo}
+                  src={formData.logoUrl}
                   alt="Company logo"
                   className="w-32 h-32 object-contain border rounded-lg p-2"
                 />
@@ -184,10 +273,10 @@ export function BrandingSettings() {
                 <Upload className="mr-2 h-4 w-4" />
                 Upload Logo
               </Button>
-              {previewLogo && (
+              {formData.logoUrl && (
                 <Button
                   variant="ghost"
-                  onClick={() => setPreviewLogo(null)}
+                  onClick={() => setFormData(prev => ({ ...prev, logoUrl: '' }))}
                   className="text-destructive"
                 >
                   Remove Logo
@@ -217,13 +306,13 @@ export function BrandingSettings() {
                 <Input
                   id="primaryColor"
                   type="color"
-                  value={branding.primaryColor || '#3b82f6'}
-                  onChange={(e) => updateBranding({ primaryColor: e.target.value })}
+                  value={formData.primaryColor}
+                  onChange={(e) => setFormData(prev => ({ ...prev, primaryColor: e.target.value }))}
                   className="w-20 h-10 p-1 cursor-pointer"
                 />
                 <Input
-                  value={branding.primaryColor || '#3b82f6'}
-                  onChange={(e) => updateBranding({ primaryColor: e.target.value })}
+                  value={formData.primaryColor}
+                  onChange={(e) => setFormData(prev => ({ ...prev, primaryColor: e.target.value }))}
                   placeholder="#3b82f6"
                   className="flex-1"
                 />
@@ -236,13 +325,13 @@ export function BrandingSettings() {
                 <Input
                   id="secondaryColor"
                   type="color"
-                  value={branding.secondaryColor || '#10b981'}
-                  onChange={(e) => updateBranding({ secondaryColor: e.target.value })}
+                  value={formData.secondaryColor}
+                  onChange={(e) => setFormData(prev => ({ ...prev, secondaryColor: e.target.value }))}
                   className="w-20 h-10 p-1 cursor-pointer"
                 />
                 <Input
-                  value={branding.secondaryColor || '#10b981'}
-                  onChange={(e) => updateBranding({ secondaryColor: e.target.value })}
+                  value={formData.secondaryColor}
+                  onChange={(e) => setFormData(prev => ({ ...prev, secondaryColor: e.target.value }))}
                   placeholder="#10b981"
                   className="flex-1"
                 />
@@ -274,8 +363,8 @@ export function BrandingSettings() {
               <Input
                 id="supportEmail"
                 type="email"
-                value={branding.supportEmail || ''}
-                onChange={(e) => updateBranding({ supportEmail: e.target.value })}
+                value={formData.supportEmail}
+                onChange={(e) => setFormData(prev => ({ ...prev, supportEmail: e.target.value }))}
                 placeholder="support@yourcompany.com"
               />
             </div>
@@ -284,8 +373,8 @@ export function BrandingSettings() {
               <Label htmlFor="supportPhone">Support Phone</Label>
               <Input
                 id="supportPhone"
-                value={branding.supportPhone || ''}
-                onChange={(e) => updateBranding({ supportPhone: e.target.value })}
+                value={formData.supportPhone}
+                onChange={(e) => setFormData(prev => ({ ...prev, supportPhone: e.target.value }))}
                 placeholder="1-800-YOUR-BIZ"
               />
             </div>
@@ -296,8 +385,8 @@ export function BrandingSettings() {
             <Input
               id="website"
               type="url"
-              value={branding.website || ''}
-              onChange={(e) => updateBranding({ website: e.target.value })}
+              value={formData.website}
+              onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
               placeholder="https://yourcompany.com"
             />
           </div>
@@ -306,8 +395,8 @@ export function BrandingSettings() {
             <Label htmlFor="emailSignature">Email Signature</Label>
             <Textarea
               id="emailSignature"
-              value={branding.emailSignature || ''}
-              onChange={(e) => updateBranding({ emailSignature: e.target.value })}
+              value={formData.emailSignature}
+              onChange={(e) => setFormData(prev => ({ ...prev, emailSignature: e.target.value }))}
               placeholder="Thank you for choosing [Company Name]!"
               rows={3}
             />

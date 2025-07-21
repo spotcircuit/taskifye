@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { QuickBooksService, quickBooksStorage } from '@/lib/integrations/quickbooks'
-import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { PipedriveService } from '@/lib/integrations/pipedrive'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get Pipedrive API key
-    const pipedriveApiKey = pipedriveStorage.getApiKey()
+    const pipedriveApiKey = null // API key now comes from database
     if (!pipedriveApiKey) {
       return NextResponse.json(
         { error: 'Pipedrive not connected' },
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     const qb = new QuickBooksService(config)
     qb.setTokens(tokens)
 
-    const pipedrive = new PipedriveService(pipedriveApiKey)
+    const pipedrive = new PipedriveService()
 
     // Sync customers
     let customersSynced = 0

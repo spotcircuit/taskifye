@@ -13,8 +13,9 @@ import {
   TrendingUp, AlertCircle, Eye, Paintbrush
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { PipedriveService } from '@/lib/integrations/pipedrive'
 import { format, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns'
+import { useIntegrations } from '@/contexts/integrations-context'
 
 interface Quote {
   id: number
@@ -44,6 +45,7 @@ const quoteStatuses = {
 
 export function QuotesList() {
   const router = useRouter()
+  const { status, isLoading: integrationsLoading } = useIntegrations()
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -51,18 +53,21 @@ export function QuotesList() {
   const [dateFilter, setDateFilter] = useState('all')
 
   useEffect(() => {
-    fetchQuotes()
-  }, [])
+    if (!integrationsLoading && status.pipedrive) {
+      fetchQuotes()
+    } else if (!integrationsLoading) {
+      setLoading(false)
+    }
+  }, [integrationsLoading, status.pipedrive])
 
   const fetchQuotes = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) {
+    if (!status.pipedrive) {
       setLoading(false)
       return
     }
 
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       // Fetch deals that represent quotes
       // In a real implementation, you'd filter by a specific pipeline or stage
       const response = await pipedrive.getDeals({ status: 'all_not_deleted' })
@@ -318,6 +323,18 @@ export function QuotesList() {
             <div className="text-center py-8">
               <Loader2 className="h-8 w-8 animate-spin mx-auto" />
               <p className="text-muted-foreground mt-2">Loading quotes...</p>
+            </div>
+          ) : !status.pipedrive ? (
+            <div className="text-center py-8">
+              <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-lg font-medium">Pipedrive Not Connected</p>
+              <p className="text-muted-foreground">Connect Pipedrive to manage quotes</p>
+              <Button 
+                className="mt-4"
+                onClick={() => router.push('/dashboard/integrations')}
+              >
+                Configure Integrations
+              </Button>
             </div>
           ) : filteredQuotes.length === 0 ? (
             <div className="text-center py-8">

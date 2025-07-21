@@ -15,8 +15,9 @@ import {
   Phone, Mail, Building, Camera, Navigation,
   Loader2, ChevronDown, Timer, Package, GripVertical
 } from 'lucide-react'
-import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { PipedriveService } from '@/lib/integrations/pipedrive'
 import { format } from 'date-fns'
+import { useIntegrations } from '@/contexts/integrations-context'
 import {
   DndContext,
   DragEndEvent,
@@ -72,6 +73,7 @@ const priorityColors = {
 }
 
 export default function JobsPage() {
+  const { status, isLoading: integrationsLoading } = useIntegrations()
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedView, setSelectedView] = useState<'pipeline' | 'list' | 'calendar'>('pipeline')
@@ -94,18 +96,21 @@ export default function JobsPage() {
   )
 
   useEffect(() => {
-    fetchJobs()
-  }, [])
+    if (!integrationsLoading && status.pipedrive) {
+      fetchJobs()
+    } else if (!integrationsLoading) {
+      setLoading(false)
+    }
+  }, [integrationsLoading, status.pipedrive])
 
   const fetchJobs = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) {
+    if (!status.pipedrive) {
       setLoading(false)
       return
     }
 
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       const response = await pipedrive.getDeals({ status: 'all_not_deleted' })
       
       if (response.success && response.deals) {
@@ -119,11 +124,10 @@ export default function JobsPage() {
   }
 
   const updateJobStage = async (jobId: number, newStageId: number) => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) return
+    if (!status.pipedrive) return
 
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       await pipedrive.updateDeal(jobId, { stage_id: newStageId })
       
       // Update local state
@@ -498,6 +502,18 @@ export default function JobsPage() {
             <div className="text-center py-8">
               <Loader2 className="h-8 w-8 animate-spin mx-auto" />
               <p className="text-muted-foreground mt-2">Loading jobs...</p>
+            </div>
+          ) : !status.pipedrive ? (
+            <div className="text-center py-8">
+              <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-lg font-medium">Pipedrive Not Connected</p>
+              <p className="text-muted-foreground">Connect Pipedrive to manage jobs</p>
+              <Button 
+                className="mt-4"
+                onClick={() => window.location.href = '/dashboard/integrations'}
+              >
+                Configure Integrations
+              </Button>
             </div>
           ) : (
             <div className="space-y-4">

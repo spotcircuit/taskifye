@@ -6,6 +6,18 @@ A comprehensive white-label CRM platform designed for field service businesses (
 
 ## 🚀 Quick Start
 
+### Deploy to Vercel (5 minutes)
+```bash
+# 1. Set up Turso database (one-time)
+npm run setup:turso
+
+# 2. Deploy to Vercel
+npm run deploy
+```
+
+See [DEPLOYMENT_QUICKSTART.md](./DEPLOYMENT_QUICKSTART.md) for details.
+
+### Local Development
 ```bash
 npm install
 npx prisma generate
@@ -14,12 +26,19 @@ npm run dev
 
 Open http://localhost:3000
 
-## ✅ Latest Updates (December 2025)
+## ✅ Latest Updates (January 2025)
 
-### **Multi-Tenant Architecture** 🆕
+### **API Key Management Overhaul** 🆕
+- ✅ **Database-backed storage** - Removed localStorage dependency
+- ✅ **Server-side caching** - 5-minute TTL for performance
+- ✅ **IntegrationsContext** - Client-side connection status
+- ✅ **Automatic fallbacks** - "Connect Integration" CTAs
+- ✅ **Zero API key exposure** - All keys server-side only
+
+### **Multi-Tenant Architecture**
 - ✅ **Agency → Client → Users** hierarchy
 - ✅ **Per-client branding** (logos, colors, taglines)
-- ✅ **Encrypted API credentials** per client
+- ✅ **Encrypted API credentials** per client with caching
 - ✅ **Isolated data** for each client
 - ✅ **Database models**: Agency, Client, Branding, ApiSettings
 

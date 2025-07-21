@@ -17,7 +17,7 @@ import {
   ExternalLink, Banknote, Timer
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { PipedriveService } from '@/lib/integrations/pipedrive'
 import { format, addDays, differenceInDays, isPast, isToday, isFuture } from 'date-fns'
 
 interface Invoice {
@@ -68,14 +68,14 @@ export function InvoiceManagement() {
   }, [])
 
   const fetchInvoices = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
+    const apiKey = null // API key now comes from database
     if (!apiKey) {
       setLoading(false)
       return
     }
 
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       const response = await pipedrive.getDeals({ status: 'all_not_deleted' })
       
       if (response.success && response.deals) {
@@ -129,11 +129,11 @@ export function InvoiceManagement() {
   }
 
   const createInvoiceFromDeal = async (dealId: number) => {
-    const apiKey = pipedriveStorage.getApiKey()
+    const apiKey = null // API key now comes from database
     if (!apiKey) return
 
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       
       // Move deal to "Invoiced" stage
       await pipedrive.updateDeal(dealId, { stage_id: 6 }) // Assuming stage 6 is "Invoiced"
@@ -162,11 +162,11 @@ Status: Sent to customer
   const recordPayment = async () => {
     if (!selectedInvoice || !paymentData.amount) return
 
-    const apiKey = pipedriveStorage.getApiKey()
+    const apiKey = null // API key now comes from database
     if (!apiKey) return
 
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       
       // Update deal to won status
       await pipedrive.updateDeal(selectedInvoice.dealId, { 
@@ -215,11 +215,11 @@ ${paymentData.notes ? `Notes: ${paymentData.notes}` : ''}
   }
 
   const sendReminder = async (invoice: Invoice) => {
-    const apiKey = pipedriveStorage.getApiKey()
+    const apiKey = null // API key now comes from database
     if (!apiKey) return
 
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       
       // Create activity for reminder
       await pipedrive.createActivity({

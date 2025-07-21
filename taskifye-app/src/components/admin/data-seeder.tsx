@@ -12,7 +12,7 @@ import {
   Building, Users, Briefcase, Calendar
 } from 'lucide-react'
 import { seedPipedriveData } from '@/lib/data/pipedrive-seeder'
-import { pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { useIntegrations } from '@/contexts/integrations-context'
 
 interface SeedProgress {
   step: string
@@ -22,6 +22,7 @@ interface SeedProgress {
 }
 
 export function DataSeeder() {
+  const { status, isLoading: integrationsLoading } = useIntegrations()
   const [isSeeding, setIsSeeding] = useState(false)
   const [progress, setProgress] = useState<SeedProgress | null>(null)
   const [result, setResult] = useState<any>(null)
@@ -35,8 +36,7 @@ export function DataSeeder() {
   })
 
   const startSeeding = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) {
+    if (!status.pipedrive) {
       setError('Please connect to Pipedrive first from the Integrations page')
       return
     }
@@ -67,7 +67,7 @@ export function DataSeeder() {
         }
       }, 2000)
 
-      const seedResult = await seedPipedriveData(apiKey, config)
+      const seedResult = await seedPipedriveData(config)
       
       clearInterval(progressInterval)
       setResult(seedResult)

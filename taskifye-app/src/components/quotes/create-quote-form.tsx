@@ -14,9 +14,10 @@ import {
   Calendar, DollarSign, Percent, Hash, Package,
   Building, Phone, Mail, MapPin, Search, Loader2
 } from 'lucide-react'
-import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { PipedriveService } from '@/lib/integrations/pipedrive'
 import { format, addDays } from 'date-fns'
 import { useRouter } from 'next/navigation'
+import { useIntegrations } from '@/contexts/integrations-context'
 
 interface QuoteItem {
   id: string
@@ -60,6 +61,7 @@ const serviceCatalog = [
 
 export function CreateQuoteForm({ dealId }: { dealId?: number }) {
   const router = useRouter()
+  const { status: integrationStatus, isLoading: integrationsLoading } = useIntegrations()
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [contacts, setContacts] = useState<Contact[]>([])
@@ -89,19 +91,20 @@ export function CreateQuoteForm({ dealId }: { dealId?: number }) {
   ])
 
   useEffect(() => {
-    fetchContacts()
-    if (dealId) {
-      fetchDealDetails(dealId)
+    if (!integrationsLoading && integrationStatus.pipedrive) {
+      fetchContacts()
+      if (dealId) {
+        fetchDealDetails(dealId)
+      }
     }
-  }, [dealId])
+  }, [dealId, integrationsLoading, integrationStatus.pipedrive])
 
   const fetchContacts = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) return
+    if (!integrationStatus.pipedrive) return
 
     setLoading(true)
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       const response = await pipedrive.getPersons()
       if (response.success && response.persons) {
         setContacts(response.persons)
@@ -114,11 +117,10 @@ export function CreateQuoteForm({ dealId }: { dealId?: number }) {
   }
 
   const fetchDealDetails = async (id: number) => {
-    const apiKey = pipedriveStorage.getApiKey()
-    if (!apiKey) return
+    if (!integrationStatus.pipedrive) return
 
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       const response = await pipedrive.getDeals({ id })
       if (response.success && response.deals?.[0]) {
         const deal = response.deals[0]
@@ -200,13 +202,12 @@ export function CreateQuoteForm({ dealId }: { dealId?: number }) {
 
     setSaving(true)
     try {
-      const apiKey = pipedriveStorage.getApiKey()
-      if (!apiKey) {
+      if (!integrationStatus.pipedrive) {
         alert('Please connect Pipedrive first')
         return
       }
 
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       
       // Create or update deal
       const dealData = {

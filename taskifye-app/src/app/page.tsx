@@ -122,7 +122,6 @@ export default function HomePage() {
               <nav className="hidden md:flex items-center gap-6">
                 <Link href="#features" className="text-sm font-medium hover:text-blue-600 transition-colors">Features</Link>
                 <Link href="#testimonials" className="text-sm font-medium hover:text-blue-600 transition-colors">Testimonials</Link>
-                <Link href="#pricing" className="text-sm font-medium hover:text-blue-600 transition-colors">Pricing</Link>
                 <Link href="#case-studies" className="text-sm font-medium hover:text-blue-600 transition-colors">Case Studies</Link>
               </nav>
             </div>
@@ -411,61 +410,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-4 bg-gray-50">
-        <div className="container mx-auto max-w-4xl">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">
-              Pay $1,000/Month or Keep Losing $10,000+
-            </h2>
-            <p className="text-xl text-gray-600">
-              Most professional service businesses lose $50K+ annually to missed calls, scheduling chaos, and disconnected systems. We orchestrate everything for less than you lose in a week.
-            </p>
-          </div>
-
-          <Card className="max-w-2xl mx-auto">
-            <CardContent className="p-8">
-              <div className="text-center mb-8">
-                <div className="text-5xl font-bold mb-2">$1,000</div>
-                <div className="text-gray-600">per month</div>
-              </div>
-
-              <div className="space-y-4 mb-8">
-                {[
-                  'Capture every $2,000+ call (even when busy)',
-                  'Stop losing 2+ hours per scheduling mistake',
-                  'Get paid 3x faster with instant invoicing',
-                  'Book 40% more jobs with same staff',
-                  'Eliminate 80% of angry customer calls',
-                  'See exactly which jobs make money',
-                  'ROI guarantee: 5x return or money back'
-                ].map((item) => (
-                  <div key={item} className="flex items-center gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="space-y-4">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700" size="lg">
-                  Start 14-Day Free Trial
-                </Button>
-                <p className="text-center text-sm text-gray-600">
-                  No credit card required • Cancel anytime
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="mt-8 text-center">
-            <p className="text-gray-600">
-              Need a custom quote for enterprise? 
-              <Link href="#contact" className="text-blue-600 font-medium ml-1">Contact us</Link>
-            </p>
-          </div>
-        </div>
-      </section>
 
       {/* Industries Section */}
       <section className="py-20 px-4">
@@ -541,7 +485,6 @@ export default function HomePage() {
               <h4 className="font-semibold text-white mb-3">Product</h4>
               <ul className="space-y-2 text-sm">
                 <li><Link href="#features" className="hover:text-white">Features</Link></li>
-                <li><Link href="#pricing" className="hover:text-white">Pricing</Link></li>
                 <li><Link href="#case-studies" className="hover:text-white">Case Studies</Link></li>
                 <li><Link href="/dashboard" className="hover:text-white">Login</Link></li>
               </ul>

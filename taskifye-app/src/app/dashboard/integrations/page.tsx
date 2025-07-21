@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Check, X, Loader2 } from 'lucide-react'
-import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { PipedriveService } from '@/lib/integrations/pipedrive'
 
 const integrations = [
   {
@@ -116,7 +116,7 @@ export default function IntegrationsPage() {
   useEffect(() => {
     // Check for existing connections on load
     const checkConnections = async () => {
-      const pipedriveKey = pipedriveStorage.getApiKey()
+      const pipedriveKey = null // API key now comes from database
       if (pipedriveKey) {
         // Verify the connection is still valid
         try {
@@ -142,7 +142,7 @@ export default function IntegrationsPage() {
             }))
           } else {
             // Invalid key, remove it
-            pipedriveStorage.removeApiKey()
+            // pipedriveStorage.removeApiKey()
           }
         } catch (error) {
           console.error('Failed to verify Pipedrive connection:', error)
@@ -184,7 +184,7 @@ export default function IntegrationsPage() {
         const result = await response.json()
 
         if (result.success) {
-          pipedriveStorage.setApiKey(apiKey)
+          // pipedriveStorage.setApiKey(apiKey)
           setConnectionStatus(prev => ({ ...prev, pipedrive: true }))
           // Store user info for display
           setCredentials(prev => ({ 
@@ -213,7 +213,7 @@ export default function IntegrationsPage() {
 
   const handleDisconnect = async (integrationId: string) => {
     if (integrationId === 'pipedrive') {
-      pipedriveStorage.removeApiKey()
+      // pipedriveStorage.removeApiKey()
       setConnectionStatus(prev => ({ ...prev, pipedrive: false }))
       setCredentials(prev => ({ ...prev, pipedrive: {} }))
       alert('Disconnected from Pipedrive')

@@ -21,7 +21,7 @@ import {
   Target, Zap, BarChart3, Settings, Eye,
   Smartphone, Monitor, Globe, RefreshCw, UserPlus
 } from 'lucide-react'
-import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { PipedriveService } from '@/lib/integrations/pipedrive'
 import { format, addDays } from 'date-fns'
 
 interface Contact {
@@ -241,14 +241,14 @@ Warmly,
   }, [])
 
   const fetchContacts = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
+    const apiKey = null // API key now comes from database
     if (!apiKey) {
       setLoading(false)
       return
     }
 
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       const response = await pipedrive.getPersons()
       
       if (response.success && response.persons) {
@@ -363,13 +363,13 @@ Warmly,
     setSendingCampaign(true)
 
     try {
-      const apiKey = pipedriveStorage.getApiKey()
+      const apiKey = null // API key now comes from database
       if (!apiKey) {
         alert('Please connect Pipedrive first')
         return
       }
 
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       const segment = segments.find(s => s.id === selectedSegment)
       
       if (!segment) return

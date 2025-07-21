@@ -56,9 +56,43 @@
 - [ ] /agency/billing                // Subscription management
 ```
 
+### 4. Quotes & Invoices Data Persistence
+**Goal**: Connect existing UI components to database
+**Status**: ✅ Database models implemented, need API endpoints
+
+**Required API Endpoints:**
+
+- `GET /api/quotes` - List all quotes for client
+- `POST /api/quotes` - Create new quote
+- `GET /api/quotes/[id]` - Get specific quote
+- `PUT /api/quotes/[id]` - Update quote
+- `DELETE /api/quotes/[id]` - Delete quote
+- `POST /api/quotes/[id]/convert` - Convert quote to invoice
+- `POST /api/quotes/[id]/email` - Email quote PDF
+- `GET /api/invoices` - List all invoices for client
+- `POST /api/invoices` - Create new invoice
+- `GET /api/invoices/[id]` - Get specific invoice
+- `PUT /api/invoices/[id]` - Update invoice
+- `DELETE /api/invoices/[id]` - Delete invoice
+- `POST /api/invoices/[id]/payment` - Record payment
+- `POST /api/invoices/[id]/email` - Email invoice PDF
+
+**UI Components Ready:**
+
+- ✅ CreateQuoteForm component
+- ✅ QuotesList component
+- ✅ InvoiceManagement component
+- ✅ Database models (Quote, Invoice, enums)
+
+**Next Steps**:
+1. Create API endpoints
+2. Update UI components to use database instead of Pipedrive
+3. Add PDF generation
+4. Implement quote-to-invoice workflow
+
 ## 📈 Short-term Goals (Week 3-4)
 
-### 4. Enhanced Security
+### 5. Enhanced Security
 - [ ] Implement proper AES-256 encryption for API keys
 - [ ] Add API rate limiting per client
 - [ ] Create audit log system

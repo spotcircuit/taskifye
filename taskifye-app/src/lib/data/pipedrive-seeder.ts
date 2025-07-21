@@ -10,8 +10,8 @@ interface SeedDataConfig {
 export class PipedriveSeeder {
   private pipedrive: PipedriveService
 
-  constructor(apiKey: string) {
-    this.pipedrive = new PipedriveService(apiKey)
+  constructor() {
+    this.pipedrive = new PipedriveService()
   }
 
   async seedAllData(config: SeedDataConfig = {
@@ -507,7 +507,7 @@ export class PipedriveSeeder {
 }
 
 // Utility function for easy seeding
-export async function seedPipedriveData(apiKey: string, config?: SeedDataConfig) {
-  const seeder = new PipedriveSeeder(apiKey)
+export async function seedPipedriveData(config?: SeedDataConfig) {
+  const seeder = new PipedriveSeeder()
   return await seeder.seedAllData(config)
 }

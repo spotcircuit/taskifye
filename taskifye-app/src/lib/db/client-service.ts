@@ -6,8 +6,15 @@ const prisma = new PrismaClient()
 // Helper function to get current client ID from session/auth
 function getCurrentClientId(): string {
   // In a real app, you'd get this from your auth session
-  // For now, we'll use a mock client ID
-  return 'demo-client-123'
+  // For now, we'll use localStorage client selection
+  if (typeof window !== 'undefined') {
+    const savedClientId = localStorage.getItem('current_client_id')
+    if (savedClientId) {
+      return savedClientId
+    }
+  }
+  // Default to first client from seed data
+  return 'client-1'
 }
 
 // Helper function to encrypt API keys (basic example)

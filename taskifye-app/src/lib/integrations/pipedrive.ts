@@ -1,29 +1,46 @@
-import { SimplePipedriveClient } from '@/lib/pipedrive-simple'
-
 export class PipedriveService {
-  private apiKey: string
-  private client: SimplePipedriveClient
+  private clientId: string
 
-  constructor(apiKey: string) {
-    this.apiKey = apiKey
-    this.client = new SimplePipedriveClient(apiKey)
+  constructor() {
+    // Get client ID from localStorage
+    this.clientId = typeof window !== 'undefined' 
+      ? localStorage.getItem('current_client_id') || 'client-1'
+      : 'client-1'
   }
 
   async testConnection() {
-    return this.client.testConnection()
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
+      body: JSON.stringify({ action: 'test' })
+    })
+    return response.json()
   }
 
   async getDeals(params = {}) {
-    return this.client.getDeals(params)
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
+      body: JSON.stringify({ action: 'getDeals', ...params })
+    })
+    return response.json()
   }
 
   async getContacts(params = {}) {
     const response = await fetch('/api/integrations/pipedrive', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
       body: JSON.stringify({
-        action: 'getContacts',
-        apiKey: this.apiKey,
+        action: 'getPersons',
         ...params
       })
     })
@@ -33,10 +50,12 @@ export class PipedriveService {
   async getStats() {
     const response = await fetch('/api/integrations/pipedrive', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
       body: JSON.stringify({
         action: 'getStats',
-        apiKey: this.apiKey
       })
     })
     return response.json()
@@ -45,10 +64,12 @@ export class PipedriveService {
   async getPipelines() {
     const response = await fetch('/api/integrations/pipedrive', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
       body: JSON.stringify({
         action: 'getPipelines',
-        apiKey: this.apiKey
       })
     })
     return response.json()
@@ -57,10 +78,12 @@ export class PipedriveService {
   async getOrganizations(options?: any) {
     const response = await fetch('/api/integrations/pipedrive', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
       body: JSON.stringify({
         action: 'getOrganizations',
-        apiKey: this.apiKey,
         options
       })
     })
@@ -70,10 +93,12 @@ export class PipedriveService {
   async createOrganization(orgData: any) {
     const response = await fetch('/api/integrations/pipedrive', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
       body: JSON.stringify({
         action: 'createOrganization',
-        apiKey: this.apiKey,
         orgData
       })
     })
@@ -83,10 +108,12 @@ export class PipedriveService {
   async getActivities(options?: any) {
     const response = await fetch('/api/integrations/pipedrive', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
       body: JSON.stringify({
         action: 'getActivities',
-        apiKey: this.apiKey,
         options
       })
     })
@@ -96,10 +123,12 @@ export class PipedriveService {
   async createActivity(activityData: any) {
     const response = await fetch('/api/integrations/pipedrive', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
       body: JSON.stringify({
         action: 'createActivity',
-        apiKey: this.apiKey,
         activityData
       })
     })
@@ -109,10 +138,12 @@ export class PipedriveService {
   async updateActivity(activityId: number, updates: any) {
     const response = await fetch('/api/integrations/pipedrive', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
       body: JSON.stringify({
         action: 'updateActivity',
-        apiKey: this.apiKey,
         activityId,
         updates
       })
@@ -123,10 +154,12 @@ export class PipedriveService {
   async updateDeal(dealId: number, updates: any) {
     const response = await fetch('/api/integrations/pipedrive', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
       body: JSON.stringify({
         action: 'updateDeal',
-        apiKey: this.apiKey,
         dealId,
         updates
       })
@@ -137,10 +170,12 @@ export class PipedriveService {
   async getStages(pipelineId?: number) {
     const response = await fetch('/api/integrations/pipedrive', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
       body: JSON.stringify({
         action: 'getStages',
-        apiKey: this.apiKey,
         pipelineId
       })
     })
@@ -150,10 +185,12 @@ export class PipedriveService {
   async getDealFields() {
     const response = await fetch('/api/integrations/pipedrive', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
       body: JSON.stringify({
         action: 'getDealFields',
-        apiKey: this.apiKey
       })
     })
     return response.json()
@@ -162,10 +199,12 @@ export class PipedriveService {
   async getPersonFields() {
     const response = await fetch('/api/integrations/pipedrive', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
       body: JSON.stringify({
         action: 'getPersonFields',
-        apiKey: this.apiKey
       })
     })
     return response.json()
@@ -174,10 +213,12 @@ export class PipedriveService {
   async getOrganizationFields() {
     const response = await fetch('/api/integrations/pipedrive', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
       body: JSON.stringify({
         action: 'getOrganizationFields',
-        apiKey: this.apiKey
       })
     })
     return response.json()
@@ -186,10 +227,12 @@ export class PipedriveService {
   async addNote(entityType: 'deal' | 'person' | 'organization', entityId: number, content: string) {
     const response = await fetch('/api/integrations/pipedrive', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
       body: JSON.stringify({
         action: 'addNote',
-        apiKey: this.apiKey,
         entityType,
         entityId,
         content
@@ -199,39 +242,52 @@ export class PipedriveService {
   }
 
   async createPerson(personData: any) {
-    return this.client.createPerson(personData)
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
+      body: JSON.stringify({
+        action: 'createPerson',
+        ...personData
+      })
+    })
+    return response.json()
   }
 
   async getPersons(params = {}) {
-    return this.client.getPersons(params)
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
+      body: JSON.stringify({
+        action: 'getPersons',
+        ...params
+      })
+    })
+    return response.json()
   }
 
   async searchPersons(term: string) {
-    // Note: Search is not implemented in SimplePipedriveClient yet
-    return this.client.getPersons({ limit: 100 })
+    // Use getPersons with a limit for now
+    return this.getPersons({ limit: 100 })
   }
 
   async createDeal(dealData: any) {
-    return this.client.createDeal(dealData)
-  }
-}
-
-// Helper to store/retrieve API keys from localStorage (temporary solution)
-export const pipedriveStorage = {
-  setApiKey: (apiKey: string) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('pipedrive_api_key', apiKey)
-    }
-  },
-  getApiKey: () => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('pipedrive_api_key')
-    }
-    return null
-  },
-  removeApiKey: () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('pipedrive_api_key')
-    }
+    const response = await fetch('/api/integrations/pipedrive', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-id': this.clientId
+      },
+      body: JSON.stringify({
+        action: 'createDeal',
+        ...dealData
+      })
+    })
+    return response.json()
   }
 }

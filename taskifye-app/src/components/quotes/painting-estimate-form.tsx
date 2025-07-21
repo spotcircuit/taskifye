@@ -16,7 +16,7 @@ import {
   Building, Phone, Mail, MapPin, Search, Loader2,
   Paintbrush, Home, Ruler, Clock, Users, AlertCircle
 } from 'lucide-react'
-import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { PipedriveService } from '@/lib/integrations/pipedrive'
 import { format, addDays } from 'date-fns'
 import { useRouter } from 'next/navigation'
 
@@ -141,12 +141,12 @@ export function PaintingEstimateForm() {
   }, [estimate.squareFootage, estimate.roomCount])
 
   const searchContacts = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
+    const apiKey = null // API key now comes from database
     if (!apiKey || !searchTerm) return
 
     setSearching(true)
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       const response = await pipedrive.getContacts({ term: searchTerm })
       if (response.success && response.contacts) {
         setContacts(response.contacts)
@@ -242,7 +242,7 @@ export function PaintingEstimateForm() {
     }
 
     setLoading(true)
-    const apiKey = pipedriveStorage.getApiKey()
+    const apiKey = null // API key now comes from database
     if (!apiKey) {
       alert('Pipedrive API key not configured')
       setLoading(false)
@@ -250,7 +250,7 @@ export function PaintingEstimateForm() {
     }
 
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       const totals = calculateTotals()
       
       // Create or update deal in Pipedrive

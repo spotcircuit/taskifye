@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const pipedrive = new PipedriveService(apiKey)
+    const pipedrive = new PipedriveService()
 
     // Extract deal data
     const { 
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const pipedrive = new PipedriveService(apiKey)
+    const pipedrive = new PipedriveService()
     const results = await pipedrive.getDeals({ status })
     
     return NextResponse.json(results)

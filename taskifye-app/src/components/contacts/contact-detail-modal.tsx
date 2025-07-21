@@ -13,7 +13,7 @@ import {
   ExternalLink, Wrench, Star
 } from 'lucide-react'
 import { format, formatDistance } from 'date-fns'
-import { PipedriveService, pipedriveStorage } from '@/lib/integrations/pipedrive'
+import { PipedriveService } from '@/lib/integrations/pipedrive'
 
 interface ContactDetailModalProps {
   contact: any
@@ -62,14 +62,14 @@ export function ContactDetailModal({ contact, isOpen, onClose, onEdit }: Contact
   }, [isOpen, contact])
 
   const fetchContactDetails = async () => {
-    const apiKey = pipedriveStorage.getApiKey()
+    const apiKey = null // API key now comes from database
     if (!apiKey) {
       setLoading(false)
       return
     }
 
     try {
-      const pipedrive = new PipedriveService(apiKey)
+      const pipedrive = new PipedriveService()
       
       // Fetch deals for this contact
       const dealsResponse = await pipedrive.getDeals({ person_id: contact.id })
